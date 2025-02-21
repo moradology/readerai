@@ -9,3 +9,6 @@ dependencies = [
     "ipython>=8.32.0",
     "python-dotenv>=1.0.1",
 ]
+
+[tool.setuptools.package-dir]
+"" = "src"
