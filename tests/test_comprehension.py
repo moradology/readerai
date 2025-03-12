@@ -8,6 +8,7 @@ class TestComprehensionFlow(unittest.TestCase):
     def test_run_default(self):
         # Run the flow with a default passage
         result = run_comprehension_flow()
+        print("Default flow result:", result)
         self.assertIn("passage", result)
         self.assertIn("question", result)
         # Either assessment should be present or an error key if unanswerable
@@ -25,6 +26,7 @@ class TestComprehensionFlow(unittest.TestCase):
         # Run the flow with a custom passage
         custom_passage = "Custom passage text for testing."
         result = run_comprehension_flow(custom_passage)
+        print("Custom passage result:", result)
         self.assertEqual(result["passage"], custom_passage)
         self.assertIn("question", result)
 
