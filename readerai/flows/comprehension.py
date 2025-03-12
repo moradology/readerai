@@ -1,6 +1,7 @@
 import os
 import dspy
 from dataclasses import dataclass
+from typing import Optional
 
 @dataclass
 class Question:
@@ -20,37 +21,26 @@ class Assessment:
 
 class GenerateQuestion(dspy.Signature):
     passage: str = dspy.InputField(description="A passage from a book or article.")
-    question: str = dspy.OutputField(description="A thought-provoking comprehension question about the passage.")
+    question: Optional[str] = dspy.OutputField(description="A thought-provoking comprehension question about the passage.", default=None)
 
-    def __call__(self, passage: str) -> dict:
-        return {"question": "What is the main idea of the passage?"}
 
 
 class AnswerabilityAssessor(dspy.Signature):
     passage: str = dspy.InputField(description="A passage from a book or article.")
     question: str = dspy.InputField(description="The question generated from the passage.")
-    answerable: bool = dspy.OutputField(description="Whether the question is answerable or not.")
-    justification: str = dspy.OutputField(description="Justification for the answerability decision.")
+    answerable: Optional[bool] = dspy.OutputField(description="Whether the question is answerable or not.", default=None)
+    justification: Optional[str] = dspy.OutputField(description="Justification for the answerability decision.", default=None)
 
-    def __call__(self, passage: str, question: str) -> dict:
-        return {"answerable": True, "justification": "The question can be answered."}
 
 
 class QuestionAssessment(dspy.Signature):
     passage: str = dspy.InputField(description="A passage from a book or article.")
     question: str = dspy.InputField(description="The question generated from the passage.")
-    relevance_score: float = dspy.OutputField(description="The relevance score of the question with respect to the passage.")
-    depth_score: float = dspy.OutputField(description="The depth score of the question.")
-    specificity_score: float = dspy.OutputField(description="The specificity score of the question.")
-    feedback: str = dspy.OutputField(description="Qualitative feedback about the question's quality.")
+    relevance_score: Optional[float] = dspy.OutputField(description="The relevance score of the question with respect to the passage.", default=None)
+    depth_score: Optional[float] = dspy.OutputField(description="The depth score of the question.", default=None)
+    specificity_score: Optional[float] = dspy.OutputField(description="The specificity score of the question.", default=None)
+    feedback: Optional[str] = dspy.OutputField(description="Qualitative feedback about the question's quality.", default=None)
 
-    def __call__(self, passage: str, question: str) -> dict:
-        return {
-            "relevance_score": 0.9,
-            "depth_score": 0.8,
-            "specificity_score": 0.85,
-            "feedback": "This question is appropriately challenging."
-        }
 
 def run_comprehension_flow(test_passage: str = None):
     # Use a default passage if none provided
