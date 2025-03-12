@@ -14,25 +14,30 @@ def run_comprehension_flow(test_passage: str = None):
     class GenerateQuestion(dspy.Signature):
         def __call__(self, passage: str):
             # Abstracted behavior: generate a simple question
-            Question = type("Question", (), {})
-            return Question(question="What is the main idea of the passage?")
+            class Question:
+                def __init__(self, question):
+                    self.question = question
+            return Question("What is the main idea of the passage?")
 
     class AnswerabilityAssessor(dspy.Signature):
         def __call__(self, passage: str, question: str):
             # For our abstract flow, assume every question is answerable.
-            Answerability = type("Answerability", (), {})
-            return Answerability(answerable=True, justification="The question can be answered.")
+            class Answerability:
+                def __init__(self, answerable, justification):
+                    self.answerable = answerable
+                    self.justification = justification
+            return Answerability(True, "The question can be answered.")
 
     class QuestionAssessment(dspy.Signature):
         def __call__(self, passage: str, question: str):
             # Return dummy assessment scores
-            Assessment = type("Assessment", (), {})
-            return Assessment(
-                relevance_score=0.9,
-                depth_score=0.8,
-                specificity_score=0.85,
-                feedback="This question is appropriately challenging."
-            )
+            class Assessment:
+                def __init__(self, relevance_score, depth_score, specificity_score, feedback):
+                    self.relevance_score = relevance_score
+                    self.depth_score = depth_score
+                    self.specificity_score = specificity_score
+                    self.feedback = feedback
+            return Assessment(0.9, 0.8, 0.85, "This question is appropriately challenging.")
 
     # Create predictor instances
     question_generator = GenerateQuestion()
