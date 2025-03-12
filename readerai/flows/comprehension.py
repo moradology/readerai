@@ -1,33 +1,34 @@
 import os
 import dspy
+from dataclasses import dataclass
+
+@dataclass
+class Question:
+    question: str
+
+@dataclass
+class Answerability:
+    answerable: bool
+    justification: str
+
+@dataclass
+class Assessment:
+    relevance_score: float
+    depth_score: float
+    specificity_score: float
+    feedback: str
 
 # --- Define signature-based classes ---
 class GenerateQuestion(dspy.Signature):
     def __call__(self, passage: str):
-        # Abstracted behavior: generate a simple question
-        class Question:
-            def __init__(self, question):
-                self.question = question
         return Question("What is the main idea of the passage?")
 
 class AnswerabilityAssessor(dspy.Signature):
     def __call__(self, passage: str, question: str):
-        # For our abstract flow, assume every question is answerable.
-        class Answerability:
-            def __init__(self, answerable, justification):
-                self.answerable = answerable
-                self.justification = justification
         return Answerability(True, "The question can be answered.")
 
 class QuestionAssessment(dspy.Signature):
     def __call__(self, passage: str, question: str):
-        # Return dummy assessment scores
-        class Assessment:
-            def __init__(self, relevance_score, depth_score, specificity_score, feedback):
-                self.relevance_score = relevance_score
-                self.depth_score = depth_score
-                self.specificity_score = specificity_score
-                self.feedback = feedback
         return Assessment(0.9, 0.8, 0.85, "This question is appropriately challenging.")
 
 def run_comprehension_flow(test_passage: str = None):
