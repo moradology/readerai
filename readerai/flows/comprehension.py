@@ -88,3 +88,22 @@ if __name__ == '__main__':
     unittest.main()
 ```
 ```python
+import unittest
+from readerai.flows.comprehension import run_comprehension_flow
+
+class ComprehensionFlowTest(unittest.TestCase):
+    def test_default_flow(self):
+        outcome = run_comprehension_flow()
+        self.assertIn("question", outcome)
+        self.assertIsInstance(outcome["question"], str)
+        self.assertIn("assessment", outcome)
+
+    def test_custom_passage_flow(self):
+        custom_passage = "In a land far away, a young explorer embarked on a journey to understand the world."
+        outcome = run_comprehension_flow(custom_passage)
+        self.assertEqual(outcome["passage"], custom_passage)
+        self.assertIn("question", outcome)
+        self.assertIn("assessment", outcome)
+
+if __name__ == '__main__':
+    unittest.main()
