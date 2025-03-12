@@ -66,7 +66,6 @@ def run_comprehension_flow(test_passage: str = None):
 if __name__ == "__main__":
     outcome = run_comprehension_flow()
     print(outcome)
-```
 ```python
 import unittest
 from readerai.flows.comprehension import run_comprehension_flow
