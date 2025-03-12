@@ -3,32 +3,22 @@ import dspy
 
 # --- Define signature-based classes ---
 class GenerateQuestion(dspy.Signature):
-    def __call__(self, passage: str):
-        # Abstracted behavior: generate a simple question
-        class Question:
-            def __init__(self, question):
-                self.question = question
-        return Question("What is the main idea of the passage?")
+    passage: str = dspy.InputField(description="A passage from a book or article.")
+    question: str = dspy.OutputField(description="A thought-provoking comprehension question about the passage.")
 
 class AnswerabilityAssessor(dspy.Signature):
-    def __call__(self, passage: str, question: str):
-        # For our abstract flow, assume every question is answerable.
-        class Answerability:
-            def __init__(self, answerable, justification):
-                self.answerable = answerable
-                self.justification = justification
-        return Answerability(True, "The question can be answered.")
+    passage: str = dspy.InputField(description="A passage from a book or article.")
+    question: str = dspy.InputField(description="The question generated from the passage.")
+    answerable: bool = dspy.OutputField(description="Whether the question is answerable or not.")
+    justification: str = dspy.OutputField(description="Justification for the answerability decision.")
 
 class QuestionAssessment(dspy.Signature):
-    def __call__(self, passage: str, question: str):
-        # Return dummy assessment scores
-        class Assessment:
-            def __init__(self, relevance_score, depth_score, specificity_score, feedback):
-                self.relevance_score = relevance_score
-                self.depth_score = depth_score
-                self.specificity_score = specificity_score
-                self.feedback = feedback
-        return Assessment(0.9, 0.8, 0.85, "This question is appropriately challenging.")
+    passage: str = dspy.InputField(description="A passage from a book or article.")
+    question: str = dspy.InputField(description="The question generated from the passage.")
+    relevance_score: int = dspy.OutputField(description="The relevance score of the question with respect to the passage.")
+    depth_score: int = dspy.OutputField(description="The depth score of the question.")
+    specificity_score: int = dspy.OutputField(description="The specificity score of the question.")
+    feedback: str = dspy.OutputField(description="Qualitative feedback about the question's quality.")
 
 def run_comprehension_flow(test_passage: str):
     # Use a default passage if none provided
