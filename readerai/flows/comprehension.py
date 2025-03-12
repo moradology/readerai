@@ -1,6 +1,35 @@
 import os
 import dspy
 
+# --- Define signature-based classes ---
+class GenerateQuestion(dspy.Signature):
+    def __call__(self, passage: str):
+        # Abstracted behavior: generate a simple question
+        class Question:
+            def __init__(self, question):
+                self.question = question
+        return Question("What is the main idea of the passage?")
+
+class AnswerabilityAssessor(dspy.Signature):
+    def __call__(self, passage: str, question: str):
+        # For our abstract flow, assume every question is answerable.
+        class Answerability:
+            def __init__(self, answerable, justification):
+                self.answerable = answerable
+                self.justification = justification
+        return Answerability(True, "The question can be answered.")
+
+class QuestionAssessment(dspy.Signature):
+    def __call__(self, passage: str, question: str):
+        # Return dummy assessment scores
+        class Assessment:
+            def __init__(self, relevance_score, depth_score, specificity_score, feedback):
+                self.relevance_score = relevance_score
+                self.depth_score = depth_score
+                self.specificity_score = specificity_score
+                self.feedback = feedback
+        return Assessment(0.9, 0.8, 0.85, "This question is appropriately challenging.")
+
 def run_comprehension_flow(test_passage: str = None):
     # Use a default passage if none provided
     if test_passage is None:
@@ -9,35 +38,6 @@ def run_comprehension_flow(test_passage: str = None):
     # Configure the LLM
     llm = dspy.LM('gemini/gemini-2.0-flash-001', api_key=os.getenv("GOOGLE_API_KEY"))
     dspy.settings.configure(lm=llm, experimental=True, provide_traceback=True)
-
-    # --- Define signature-based classes ---
-    class GenerateQuestion(dspy.Signature):
-        def __call__(self, passage: str):
-            # Abstracted behavior: generate a simple question
-            class Question:
-                def __init__(self, question):
-                    self.question = question
-            return Question("What is the main idea of the passage?")
-
-    class AnswerabilityAssessor(dspy.Signature):
-        def __call__(self, passage: str, question: str):
-            # For our abstract flow, assume every question is answerable.
-            class Answerability:
-                def __init__(self, answerable, justification):
-                    self.answerable = answerable
-                    self.justification = justification
-            return Answerability(True, "The question can be answered.")
-
-    class QuestionAssessment(dspy.Signature):
-        def __call__(self, passage: str, question: str):
-            # Return dummy assessment scores
-            class Assessment:
-                def __init__(self, relevance_score, depth_score, specificity_score, feedback):
-                    self.relevance_score = relevance_score
-                    self.depth_score = depth_score
-                    self.specificity_score = specificity_score
-                    self.feedback = feedback
-            return Assessment(0.9, 0.8, 0.85, "This question is appropriately challenging.")
 
     # Create predictor instances
     question_generator = GenerateQuestion()
