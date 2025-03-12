@@ -19,7 +19,7 @@ class Assessment:
     feedback: str
 
 class GenerateQuestion(dspy.Signature):
-    passage = dspy.InputField(description="A passage from a book or article.")
+    passage: str = dspy.InputField(description="A passage from a book or article.")
     question: str = dspy.OutputField(description="A thought-provoking comprehension question about the passage.")
 
     def __call__(self, passage: str) -> dict:
@@ -27,8 +27,8 @@ class GenerateQuestion(dspy.Signature):
 
 
 class AnswerabilityAssessor(dspy.Signature):
-    passage = dspy.InputField(description="A passage from a book or article.")
-    question = dspy.InputField(description="The question generated from the passage.")
+    passage: str = dspy.InputField(description="A passage from a book or article.")
+    question: str = dspy.InputField(description="The question generated from the passage.")
     answerable: bool = dspy.OutputField(description="Whether the question is answerable or not.")
     justification: str = dspy.OutputField(description="Justification for the answerability decision.")
 
@@ -37,8 +37,8 @@ class AnswerabilityAssessor(dspy.Signature):
 
 
 class QuestionAssessment(dspy.Signature):
-    passage = dspy.InputField(description="A passage from a book or article.")
-    question = dspy.InputField(description="The question generated from the passage.")
+    passage: str = dspy.InputField(description="A passage from a book or article.")
+    question: str = dspy.InputField(description="The question generated from the passage.")
     relevance_score: float = dspy.OutputField(description="The relevance score of the question with respect to the passage.")
     depth_score: float = dspy.OutputField(description="The depth score of the question.")
     specificity_score: float = dspy.OutputField(description="The specificity score of the question.")
