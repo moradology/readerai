@@ -18,18 +18,14 @@ class Assessment:
     specificity_score: float
     feedback: str
 
-# --- Define signature-based classes ---
-class GenerateQuestion(dspy.Signature):
-    def __call__(self, passage: str):
-        return Question("What is the main idea of the passage?")
+def generate_question(passage: str) -> Question:
+    return Question("What is the main idea of the passage?")
 
-class AnswerabilityAssessor(dspy.Signature):
-    def __call__(self, passage: str, question: str):
-        return Answerability(True, "The question can be answered.")
+def assess_answerability(passage: str, question: str) -> Answerability:
+    return Answerability(True, "The question can be answered.")
 
-class QuestionAssessment(dspy.Signature):
-    def __call__(self, passage: str, question: str):
-        return Assessment(0.9, 0.8, 0.85, "This question is appropriately challenging.")
+def assess_question(passage: str, question: str) -> Assessment:
+    return Assessment(0.9, 0.8, 0.85, "This question is appropriately challenging.")
 
 def run_comprehension_flow(test_passage: str = None):
     # Use a default passage if none provided
@@ -40,16 +36,11 @@ def run_comprehension_flow(test_passage: str = None):
     llm = dspy.LM('gemini/gemini-2.0-flash-001', api_key=os.getenv("GOOGLE_API_KEY"))
     dspy.settings.configure(lm=llm, experimental=True, provide_traceback=True)
 
-    # Create predictor instances
-    question_generator = GenerateQuestion()
-    answer_assessor = AnswerabilityAssessor()
-    question_assessor = QuestionAssessment()
-
     # Execute the flow
-    question_obj = question_generator(test_passage)
-    answer_eval = answer_assessor(test_passage, question_obj.question)
+    question_obj = generate_question(test_passage)
+    answer_eval = assess_answerability(test_passage, question_obj.question)
     if answer_eval.answerable:
-        assessment = question_assessor(test_passage, question_obj.question)
+        assessment = assess_question(test_passage, question_obj.question)
         result = {
             "passage": test_passage,
             "question": question_obj.question,
