@@ -18,14 +18,39 @@ class Assessment:
     specificity_score: float
     feedback: str
 
-def generate_question(passage: str) -> Question:
-    return Question("What is the main idea of the passage?")
+class GenerateQuestion(dspy.Signature):
+    passage = dspy.InputField(description="A passage from a book or article.")
+    question: str = dspy.OutputField(description="A thought-provoking comprehension question about the passage.")
 
-def assess_answerability(passage: str, question: str) -> Answerability:
-    return Answerability(True, "The question can be answered.")
+    def __call__(self, passage: str) -> dict:
+        return {"question": "What is the main idea of the passage?"}
 
-def assess_question(passage: str, question: str) -> Assessment:
-    return Assessment(0.9, 0.8, 0.85, "This question is appropriately challenging.")
+
+class AnswerabilityAssessor(dspy.Signature):
+    passage = dspy.InputField(description="A passage from a book or article.")
+    question = dspy.InputField(description="The question generated from the passage.")
+    answerable: bool = dspy.OutputField(description="Whether the question is answerable or not.")
+    justification: str = dspy.OutputField(description="Justification for the answerability decision.")
+
+    def __call__(self, passage: str, question: str) -> dict:
+        return {"answerable": True, "justification": "The question can be answered."}
+
+
+class QuestionAssessment(dspy.Signature):
+    passage = dspy.InputField(description="A passage from a book or article.")
+    question = dspy.InputField(description="The question generated from the passage.")
+    relevance_score: float = dspy.OutputField(description="The relevance score of the question with respect to the passage.")
+    depth_score: float = dspy.OutputField(description="The depth score of the question.")
+    specificity_score: float = dspy.OutputField(description="The specificity score of the question.")
+    feedback: str = dspy.OutputField(description="Qualitative feedback about the question's quality.")
+
+    def __call__(self, passage: str, question: str) -> dict:
+        return {
+            "relevance_score": 0.9,
+            "depth_score": 0.8,
+            "specificity_score": 0.85,
+            "feedback": "This question is appropriately challenging."
+        }
 
 def run_comprehension_flow(test_passage: str = None):
     # Use a default passage if none provided
@@ -36,26 +61,26 @@ def run_comprehension_flow(test_passage: str = None):
     llm = dspy.LM('gemini/gemini-2.0-flash-001', api_key=os.getenv("GOOGLE_API_KEY"))
     dspy.settings.configure(lm=llm, experimental=True, provide_traceback=True)
 
-    # Execute the flow
-    question_obj = generate_question(test_passage)
-    answer_eval = assess_answerability(test_passage, question_obj.question)
-    if answer_eval.answerable:
-        assessment = assess_question(test_passage, question_obj.question)
+    # Execute the flow using dspy.Signature classes
+    question_generator = GenerateQuestion()
+    question_result = question_generator(test_passage)
+    question_text = question_result["question"]
+
+    answer_assessor = AnswerabilityAssessor()
+    answer_eval = answer_assessor(test_passage, question_text)
+    if answer_eval["answerable"]:
+        question_assessor = QuestionAssessment()
+        assessment = question_assessor(test_passage, question_text)
         result = {
             "passage": test_passage,
-            "question": question_obj.question,
-            "assessment": {
-                "relevance_score": assessment.relevance_score,
-                "depth_score": assessment.depth_score,
-                "specificity_score": assessment.specificity_score,
-                "feedback": assessment.feedback
-            }
+            "question": question_text,
+            "assessment": assessment
         }
     else:
         result = {
             "passage": test_passage,
-            "question": question_obj.question,
-            "error": answer_eval.justification
+            "question": question_text,
+            "error": answer_eval["justification"]
         }
     return result
 
