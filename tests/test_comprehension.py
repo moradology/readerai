@@ -1,34 +1,87 @@
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import unittest
-from readerai.flows.comprehension import run_comprehension_flow
+import dspy
+from readerai.flows.comprehension import ComprehensionFlow
 
-class TestComprehensionFlow(unittest.TestCase):
-    def test_run_default(self):
-        # Run the flow with a default passage
-        result = run_comprehension_flow()
-        print("Default flow result:", result)
-        self.assertIn("passage", result)
-        self.assertIn("question", result)
-        # Either assessment should be present or an error key if unanswerable
-        if "assessment" in result:
-            self.assertIn("relevance_score", result["assessment"])
-            self.assertIn("depth_score", result["assessment"])
-            self.assertIn("specificity_score", result["assessment"])
-            self.assertIn("feedback", result["assessment"])
-        elif "error" in result:
-            self.assertTrue(result["error"])
-        else:
-            self.fail("Result must include either assessment or error.")
+def test_metric_answerable_correct():
+    """Test the metric function with a correctly identified answerable question."""
+    example = dspy.Example(
+        answerable=True,
+        relevance_score=0.8,
+        depth_score=0.7,
+        specificity_score=0.9
+    )
+    
+    prediction = dspy.Prediction(
+        answerable=True,
+        relevance_score=0.8,
+        depth_score=0.7,
+        specificity_score=0.9
+    )
+    
+    score = ComprehensionFlow.metric(example, prediction)
+    assert score == 1.0
 
-    def test_custom_passage(self):
-        # Run the flow with a custom passage
-        custom_passage = "Custom passage text for testing."
-        result = run_comprehension_flow(custom_passage)
-        print("Custom passage result:", result)
-        self.assertEqual(result["passage"], custom_passage)
-        self.assertIn("question", result)
+def test_metric_answerable_with_differences():
+    """Test the metric function with an answerable question but different scores."""
+    example = dspy.Example(
+        answerable=True,
+        relevance_score=0.8,
+        depth_score=0.7,
+        specificity_score=0.9
+    )
+    
+    prediction = dspy.Prediction(
+        answerable=True,
+        relevance_score=0.7,
+        depth_score=0.6,
+        specificity_score=0.8
+    )
+    
+    score = ComprehensionFlow.metric(example, prediction)
+    assert score < 1.0
+    assert score > 0.0
 
-if __name__ == "__main__":
-    unittest.main()
+def test_metric_unanswerable_correct():
+    """Test the metric function with a correctly identified unanswerable question."""
+    example = dspy.Example(
+        answerable=False
+    )
+    
+    prediction = dspy.Prediction(
+        answerable=False
+    )
+    
+    score = ComprehensionFlow.metric(example, prediction)
+    assert score == 1.0
+
+def test_metric_answerable_incorrect():
+    """Test the metric function with an incorrectly identified answerable question."""
+    example = dspy.Example(
+        answerable=True,
+        relevance_score=0.8,
+        depth_score=0.7,
+        specificity_score=0.9
+    )
+    
+    prediction = dspy.Prediction(
+        answerable=False
+    )
+    
+    score = ComprehensionFlow.metric(example, prediction)
+    assert score == 0.0
+
+def test_metric_unanswerable_incorrect():
+    """Test the metric function with an incorrectly identified unanswerable question."""
+    example = dspy.Example(
+        answerable=False
+    )
+    
+    prediction = dspy.Prediction(
+        answerable=True,
+        relevance_score=0.8,
+        depth_score=0.7,
+        specificity_score=0.9
+    )
+    
+    score = ComprehensionFlow.metric(example, prediction)
+    assert score == 0.0
+
