@@ -5,16 +5,16 @@ def test_metric_answerable_correct():
     """Test the metric function with a correctly identified answerable question."""
     example = dspy.Example(
         answerable=True,
-        relevance_score=0.8,
-        depth_score=0.7,
-        specificity_score=0.9
+        relevance_score=4,
+        depth_score=4,
+        specificity_score=5
     )
     
     prediction = dspy.Prediction(
         answerable=True,
-        relevance_score=0.8,
-        depth_score=0.7,
-        specificity_score=0.9
+        relevance_score=4,
+        depth_score=4,
+        specificity_score=5
     )
     
     score = ComprehensionFlow.metric(example, prediction)
@@ -24,16 +24,16 @@ def test_metric_answerable_with_differences():
     """Test the metric function with an answerable question but different scores."""
     example = dspy.Example(
         answerable=True,
-        relevance_score=0.8,
-        depth_score=0.7,
-        specificity_score=0.9
+        relevance_score=4,
+        depth_score=4,
+        specificity_score=5
     )
     
     prediction = dspy.Prediction(
         answerable=True,
-        relevance_score=0.7,
-        depth_score=0.6,
-        specificity_score=0.8
+        relevance_score=4,
+        depth_score=3,
+        specificity_score=4
     )
     
     score = ComprehensionFlow.metric(example, prediction)
@@ -57,9 +57,9 @@ def test_metric_answerable_incorrect():
     """Test the metric function with an incorrectly identified answerable question."""
     example = dspy.Example(
         answerable=True,
-        relevance_score=0.8,
-        depth_score=0.7,
-        specificity_score=0.9
+        relevance_score=4,
+        depth_score=3,
+        specificity_score=4
     )
     
     prediction = dspy.Prediction(
@@ -77,9 +77,9 @@ def test_metric_unanswerable_incorrect():
     
     prediction = dspy.Prediction(
         answerable=True,
-        relevance_score=0.8,
-        depth_score=0.7,
-        specificity_score=0.9
+        relevance_score=4,
+        depth_score=3,
+        specificity_score=5
     )
     
     score = ComprehensionFlow.metric(example, prediction)
