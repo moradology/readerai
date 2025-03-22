@@ -38,18 +38,30 @@ class VocabularyFlow(dspy.Module):
     
     def forward(self, passage: str, student_response: Optional[str] = None) -> dspy.Prediction:
         """
-        1) Identify a challenging word in the passage.
-        2) Generate a question asking for a definition of that word in context.
-        3) To do: If 'student_response' is provided, assess it for correctness.
-        
+        Generates a vocabulary question based on a challenging word identified in a passage.
+
+        1) Identifies a challenging word in the passage using `word_identifier`.
+        2) Generates a question asking for a definition of that word in context using `question_generator`.
+        3) Assesses the generated question using `assessor`.
+        4) [Future] If 'student_response' is provided, it will be assessed for correctness and returned in the dspy.prediction.
+
         Args:
             passage: The text passage to analyze.
-            
+            student_response: (Optional) A student's answer to the vocabulary question.
+
         Returns:
             dspy.Prediction containing:
-                - challenging_word
-                - usage_sentences
-                - question
+                - challenging_word: The challenging word identified.
+                - usage_sentences: Example sentences using the challenging word.
+                - vague_score: The vagueness of the usage sentences.
+                - question: The generated vocabulary question.
+                - feedback: Feedback on the question's quality.
+                - context_sufficiency: The sufficiency of context for the question.
+                - question_quality: The overall quality of the question.
+                - question_viability: Whether the question is viable.
+                -[Future] student_response: The student_response.
+                -[Future] student_feedback: Feedback on the student_response.
+                -[Future] student_score: The score of the student_response.
         """
         # Identify a challenging word
         word_id_result = self.word_identifier(passage=passage)
@@ -64,7 +76,7 @@ class VocabularyFlow(dspy.Module):
                 feedback=None,
                 context_sufficiency=1,
                 question_quality=None,
-                question_viability=None
+                question_viability=False
             )
         
         # Generate a vocabulary question
@@ -79,16 +91,22 @@ class VocabularyFlow(dspy.Module):
             challenging_word = word_id_result.challenging_word,
             question = question_result.question
         )
+        if not assessment_result.question_viability:
+            challenging_word = None
+            question_quality = None
+        else:
+            challenging_word = word_id_result.challenging_word
+            question_quality = assessment_result.question_quality
         
         # Build the final prediction
         prediction = dspy.Prediction(
-            challenging_word=word_id_result.challenging_word,
+            challenging_word=challenging_word,
             usage_sentences=word_id_result.usage_sentences,
             vague_score=question_result.vague_score,
             question=question_result.question,
             feedback=question_result.feedback,
             context_sufficiency=assessment_result.context_sufficiency,
-            question_quality=assessment_result.question_quality,
+            question_quality=question_quality,
             question_viability=assessment_result.question_viability
         )
         
