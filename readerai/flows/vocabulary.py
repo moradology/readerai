@@ -14,14 +14,17 @@ class GenerateVocabularyQuestion(dspy.Signature):
     challenging_word: str = dspy.InputField(description="A challenging word to define.")
     question: str = dspy.OutputField(description="A question asking the student to define the word in context.")
     vague_score: int = dspy.OutputField(description="How vague are the usage sentences to derive context of the challenging word from? (1-5)")
-    feedback: str = dspy.OutputField(description="Overall feedback on the identified challenging word.")
+    feedback: str = dspy.OutputField(description="Explanation of why the question is or isn't answerable based on the passage.")
 
 class VocabularyAssessment(dspy.Signature):
-    """Assesses the student's response for correctness in context."""
+    """Assesses the quality and viability of a vocabulary question."""
     passage: str = dspy.InputField(description="A passage from a text.")
-    challenging_word: str = dspy.InputField(description="The challenging word to be defined.")
-    #student_response: str = dspy.InputField(description="The student's definition of the challenging word.")
-    #correctness: bool = dspy.OutputField(description="Whether the student's definition is correct in context.")
+    challenging_word: str = dspy.InputField(description="The challenging word being tested.")
+    question: str = dspy.InputField(description="The generated vocabulary question.")
+    context_sufficiency: int = dspy.OutputField(description="Does the passage provide sufficient context to determine the word's meaning? (1-5)")
+    question_quality: int = dspy.OutputField(description="Overall quality considering clarity, difficulty level, and educational value (1-5)")
+    question_viability: bool = dspy.OutputField(description="Is this a viable vocabulary question overall? (True/False)")
+    feedback: str = dspy.OutputField(description="Specific assessment and suggestions for improving the vocabulary question.")
 
 class VocabularyFlow(dspy.Module):
     """A module that identifies a challenging word in a passage, generates a question, and optionally assesses a student's response.
@@ -31,7 +34,7 @@ class VocabularyFlow(dspy.Module):
         super().__init__()
         self.word_identifier = dspy.ChainOfThought(IdentifyChallengingWord)
         self.question_generator = dspy.ChainOfThought(GenerateVocabularyQuestion)
-        #self.assessor = dspy.ChainOfThought(VocabularyAssessment)
+        self.assessor = dspy.ChainOfThought(VocabularyAssessment)
     
     def forward(self, passage: str, student_response: Optional[str] = None) -> dspy.Prediction:
         """
@@ -56,15 +59,25 @@ class VocabularyFlow(dspy.Module):
             return dspy.Prediction(
                 challenging_word=None,
                 usage_sentences=None,
-                vaguer_score=None,
+                vague_score=None,
                 question="No challenging words found in the passage.",
-                feedback=None
+                feedback=None,
+                context_sufficiency=1,
+                question_quality=None,
+                question_viability=None
             )
         
         # Generate a vocabulary question
         question_result = self.question_generator(
             passage=passage,
             challenging_word=word_id_result.challenging_word
+        )
+
+        # Assess a vocabulary question
+        assessment_result = self.assessor(
+            passage = passage,
+            challenging_word = word_id_result.challenging_word,
+            question = question_result.question
         )
         
         # Build the final prediction
@@ -73,31 +86,44 @@ class VocabularyFlow(dspy.Module):
             usage_sentences=word_id_result.usage_sentences,
             vague_score=question_result.vague_score,
             question=question_result.question,
-            feedback=question_result.feedback
+            feedback=question_result.feedback,
+            context_sufficiency=assessment_result.context_sufficiency,
+            question_quality=assessment_result.question_quality,
+            question_viability=assessment_result.question_viability
         )
         
         return prediction
     
     @classmethod
     def metric(cls, example, prediction, trace=None):
-        """
-        Example metric function. You can define how to grade performance:
-         - Did we find a challenging word when expected?
-         - Was the question generated properly?
-         - Was the correctness/feedback aligned with a reference answer?
-        """
-        # Very naive check: if example has a 'challenging_word' but we didn't produce one, score=0
-        if example.challenging_word and not prediction.challenging_word:
-            return 0
+        # Got question_viability wrong; immediate and significant penalty
+        if example.question_viability != prediction.question_viability:
+            return 0.2  # Small non-zero score to allow for some partial credit
         
-        # If we had no word to find, but the code produced one, also 0
-        if not example.challenging_word and prediction.challenging_word:
-            return 0
+        # If not viable, just check if we correctly identified it as not viable
+        elif not prediction.question_viability:
+            return 1
         
-        
-        vague_diff = abs(prediction.vague_score - example.vague_score)
-        normalized_score = 1 - (vague_diff / 4.0) # Maximum possible difference if scores range from 1 to 5
-        return max(0, normalized_score)
+        # If viable, evaluate the quality metrics
+        else:
+            # Calculate differences between predicted and example scores
+            vague_diff = abs(prediction.vague_score - example.vague_score)
+            context_diff = abs(prediction.context_sufficiency - example.context_sufficiency)
+            quality_diff = abs(prediction.question_quality - example.question_quality)
+            
+            # Calculate maximum possible difference (assuming 1-5 scale for each metric)
+            max_diff_per_metric = 4  # Maximum difference on a 1-5 scale
+            total_max_diff = max_diff_per_metric * 3  # For all three metrics
+            
+            # Calculate total difference and normalize to [0,1] range
+            total_diff = vague_diff + context_diff + quality_diff
+            normalized_score = 1 - (total_diff / total_max_diff)
+            
+            # Apply a slight penalty for any non-perfect metric to encourage precision
+            if total_diff > 0:
+                normalized_score *= 0.95
+                
+            return max(0, normalized_score)
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
@@ -119,7 +145,10 @@ if __name__ == "__main__":
             ),
             vague_score=1,
             question="In the context of the passage, how would you define 'kaleidoscope'?",
-            feedback="This question prompts the student to interpret the meaning of a visually descriptive term by examining its usage in the passage."
+            feedback="This question prompts the student to interpret the meaning of a visually descriptive term by examining its usage in the passage.",
+            context_sufficiency=5,
+            question_quality=5,
+            question_viability=True
         ),
         # Example 2: No challenging word found
         dspy.Example(
@@ -128,7 +157,10 @@ if __name__ == "__main__":
             usage_sentences=None,
             vague_score=None,
             question="No challenging words found in the passage.",
-            feedback=None
+            feedback=None,
+            context_sufficiency=1,
+            question_quality=1,
+            question_viability=False
         ),
         # Example 3: Vague Usage Sentences
         dspy.Example(
@@ -140,7 +172,105 @@ if __name__ == "__main__":
             ),
             vague_score=4,
             question="In the context of the passage, how would you define 'Photosynthesis'?",
-            feedback="The usage sentences are too vague and oversimplify the concept. They state basic facts described in the passage. More detailed examples should provide more detailed context."
+            feedback="The usage sentences are too vague and oversimplify the concept. They state basic facts described in the passage. More detailed examples should provide more detailed context.",
+            context_sufficiency=2,
+            question_quality=3,
+            question_viability=True
+        ),
+        # Example 4: Word with multiple meanings, clear context
+        dspy.Example(
+            passage="The detective tried to ferret out the truth from the reluctant witness, using a combination of gentle persuasion and clever questioning.",
+            challenging_word="ferret",
+            usage_sentences=(
+                "1) 'The journalist spent months trying to ferret out corruption in the local government.'\n"
+                "2) 'It took us hours to ferret out all the details of what happened that night.'"
+            ),
+            vague_score=1,
+            question="In the passage, what does it mean when the detective tries to 'ferret out' the truth?",
+            feedback="This question targets a verb form of a word more commonly known as an animal, providing good context for understanding figurative language.",
+            context_sufficiency=5,
+            question_quality=5,
+            question_viability=True
+        ),
+        
+        # Example 5: Technical term with sufficient context
+        dspy.Example(
+            passage="The patient presented with acute myocardial infarction, requiring immediate intervention. The doctors noted pallor, diaphoresis, and severe chest pain radiating to the left arm.",
+            challenging_word="diaphoresis",
+            usage_sentences=(
+                "1) 'The marathon runner experienced extreme diaphoresis in the final miles of the race.'\n"
+                "2) 'Diaphoresis can be a symptom of several medical conditions including infection and hormone disorders.'"
+            ),
+            vague_score=2,
+            question="Based on the context of the medical emergency described, what physical symptom does 'diaphoresis' most likely refer to?",
+            feedback="This question requires inferring meaning from context clues in a technical passage. The question format asks for the specific symptom rather than just a definition.",
+            context_sufficiency=3,
+            question_quality=4,
+            question_viability=True
+        ),
+        
+        # Example 6: Abstract concept with metaphorical usage
+        dspy.Example(
+            passage="The old man's face was a palimpsest of experiences—joy, sorrow, triumph, and loss all etched into the lines around his eyes and mouth.",
+            challenging_word="palimpsest",
+            usage_sentences=(
+                "1) 'The ancient manuscript was a palimpsest, with newer text written over partially erased older writing.'\n"
+                "2) 'The city itself is a palimpsest, with modern buildings standing alongside structures from the colonial era.'"
+            ),
+            vague_score=1,
+            question="How is the term 'palimpsest' being used metaphorically in the passage, and what does it suggest about the old man's face?",
+            feedback="This question addresses both the literal meaning and the metaphorical application, encouraging deeper analysis of figurative language.",
+            context_sufficiency=4,
+            question_quality=5,
+            question_viability=True
+        ),
+        
+        # Example 7: Word with insufficient context
+        dspy.Example(
+            passage="The obdurate official refused to change the policy despite numerous complaints.",
+            challenging_word="obdurate",
+            usage_sentences=(
+                "1) 'He remained obdurate in his decision.'\n"
+                "2) 'Her obdurate stance on the issue frustrated her colleagues.'"
+            ),
+            vague_score=4,
+            question="What does 'obdurate' mean in the passage?",
+            feedback="Both the passage and usage sentences provide minimal context clues. The question is too direct and doesn't encourage inference or analysis.",
+            context_sufficiency=2,
+            question_quality=2,
+            question_viability=True
+        ),
+        
+        # Example 8: Word with rich context but poor question
+        dspy.Example(
+            passage="The cacophony of the bustling market—vendors shouting, children laughing, and music blaring—made it nearly impossible to hear her soft voice.",
+            challenging_word="cacophony",
+            usage_sentences=(
+                "1) 'The cacophony of the construction site drove the neighbors to complain.'\n"
+                "2) 'What seemed like cacophony to the parents was beautiful music to the teenagers.'"
+            ),
+            vague_score=1,
+            question="Define cacophony.",
+            feedback="While the context is rich and the word is appropriate, the question is too basic and doesn't encourage engagement with the context clues provided in the passage.",
+            context_sufficiency=5,
+            question_quality=2,
+            question_viability=False
+        ),
+        
+        # Example 9: Challenging word with excellent question design
+        dspy.Example(
+            passage="The professor's erudition was evident in his lecture, as he effortlessly connected literature, history, and philosophy in ways his students had never considered.",
+            challenging_word="erudition",
+            usage_sentences=(
+                "1) 'Her erudition in classical languages impressed even the senior scholars.'\n"
+                "2) 'Despite his erudition, he could explain complex concepts in simple terms.'"
+            ),
+            vague_score=1,
+            question="Based on how 'erudition' is used in the passage, what qualities would a person with erudition likely demonstrate in an academic setting?",
+            feedback="This question goes beyond simple definition to application and inference, encouraging deeper understanding of the concept.",
+            context_sufficiency=4,
+            question_quality=5,
+            question_viability=True
         )
     ]
     examples_with_inputs = [example.with_inputs("passage") for example in examples]
