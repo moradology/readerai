@@ -1,12 +1,87 @@
-# ReaderAI
+# ReaderAI: AI-Powered Reading Assistant
 
-**ReaderAI** is a speech-to-speech reading assistant powered by DSPy. It helps users understand and engage with text through AI-powered comprehension questions and responses.
+ReaderAI leverages Large Language Models via DSPy and provides an interactive web interface using FastAPI to help users improve reading comprehension and vocabulary. Engage with text through AI-powered analysis, vocabulary question generation, and interactive feedback.
 
-## 🚀 Quick Start
+## ✨ Key Features
 
-### 1. Prerequisites
+  * **Initial Passage & Question:** Loads a default passage and automatically generates a relevant vocabulary question on startup.
+  * **Interactive Chat Interface:** Simple web UI for sending messages and receiving responses from the AI.
+  * **Vocabulary Question Generation:** Identifies challenging words in the text and creates context-based questions.
+  * **Usage Examples:** Provides example sentences for the identified vocabulary words.
+  * **Answer Assessment:** Evaluates user-provided answers to vocabulary questions and gives feedback.
+  * **DSPy Integration:** Utilizes the DSPy framework for structuring prompts and logic for interacting with LLMs (Gemini).
+  * **FastAPI Backend:** Exposes the AI logic through a robust asynchronous web API.
 
-- Python 3.11 or higher
-- [uv](https://github.com/astral-sh/uv) for dependency management
+## 📋 Prerequisites
 
-### 2. Clone and Setup
+  * **Python:** Version 3.11 or higher recommended.
+  * **`uv`:** A fast Python package installer and resolver. If you don't have it, install via `pip install uv`.
+  * **Git:** For cloning the repository.
+  * **Google Cloud API Key:** A valid API key with the Gemini API enabled. See [Google AI documentation](https://ai.google.dev/) for setup instructions.
+
+## ⚙️ Installation & Setup
+
+1.  **Clone the Repository:**
+
+    ```bash
+    git clone git@github.com:moradology/readerai.git
+    cd readerai
+    ```
+
+2.  **Create and Activate Virtual Environment:**
+    Using `uv` (recommended):
+
+    ```bash
+    # Create a virtual environment named .venv
+    uv venv .venv
+    # Activate it
+    # Linux/macOS/WSL:
+    source .venv/bin/activate
+    # Windows (Command Prompt/PowerShell):
+    # .venv\Scripts\activate
+    ```
+
+3.  **Install Dependencies:**
+    Using `uv` (syncs with `uv.lock` or resolves from `pyproject.toml`):
+
+    ```bash
+    uv pip sync
+    ```
+
+
+4.  **Configure Environment Variables:**
+
+      * Create a `.env` file in the project root directory (`readerai/`). You can copy the structure from `.env.example` if it exists.
+      * Add your Google API key to the `.env` file:
+        ```dotenv
+        GOOGLE_API_KEY="your_actual_api_key_here"
+        ```
+
+    *(The application uses `python-dotenv` to load this automatically)*
+
+## ▶️ Running the Application
+
+1.  **Ensure Virtual Environment is Active:** Your terminal prompt should show `(.venv)` at the beginning.
+
+2.  **Start the FastAPI Server:**
+    From the project root directory (`readerai/`), run:
+
+    ```bash
+    uvicorn main:app --reload
+    ```
+
+      * `uvicorn`: The ASGI server running the application.
+      * `main`: The Python file (`main.py`).
+      * `app`: The FastAPI application instance created in `main.py`.
+      * `--reload`: Automatically restarts the server when code changes are detected (useful for development).
+
+3.  **Access the Application:**
+    Open your web browser and navigate to: `http://127.0.0.1:8000/`
+    To view related docs on fastapi ends see: `http://127.0.0.1:8000/docs`
+
+## 🖱️ Usage
+
+  * Upon loading the main page (`/`), the initial text passage and an automatically generated vocabulary question will be displayed in the chat interface.
+  * Type your answer to the question or other messages (like "hello", "vocabulary question") into the input box at the bottom.
+  * Press the "Send" button or hit Enter to submit your message.
+  * The AI will respond, either assessing your answer or generating a reply based on your input.
