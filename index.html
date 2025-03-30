@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReaderAI Chat</title>
+    <style>
+        /* CSS Styles remain the same */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        #chatbox {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+            white-space: pre-wrap; /* Important for showing line breaks */
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+        .ai-message {
+            background-color: #e9e9eb;
+            color: black;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+        #input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ccc;
+            background-color: #fff;
+        }
+        #userInput {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #sendButton {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #sendButton:hover {
+            background-color: #0056b3;
+        }
+         /* Basic loading indicator */
+        .loading::after {
+            content: '...';
+            display: inline-block;
+            animation: loading-dots 1s steps(3, end) infinite;
+        }
+        @keyframes loading-dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div id="chatbox">
+        </div>
+    <div id="input-area">
+        <input type="text" id="userInput" placeholder="Type your message...">
+        <button id="sendButton">Send</button>
+    </div>
+
+    <script>
+        // --- Configuration Constants ---
+        const API_ENDPOINT_CHAT = '/chat';
+        const API_ENDPOINT_INITIAL = '/initial_passage';
+
+        // --- DOM Element References ---
+        const chatbox = document.getElementById('chatbox');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        // --- Function to add a message to the chatbox ---
+        function addMessage(sender, message, isloading = false) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
+            messageElement.textContent = message; // Use textContent to prevent XSS
+
+            const existingLoading = chatbox.querySelector('.loading');
+            if (isloading) {
+                if (existingLoading) return; // Don't add multiple loading indicators
+                messageElement.classList.add('loading');
+            } else if (existingLoading && sender === 'ai') {
+                // Remove loading indicator when final AI message arrives
+                existingLoading.remove();
+            }
+
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight; // Scroll to bottom
+        }
+
+        // --- Function to send message to backend ---
+        async function sendMessage() {
+            const messageText = userInput.value.trim();
+            if (!messageText) return;
+
+            addMessage('user', messageText);
+            userInput.value = ''; // Clear input
+
+            // Show loading indicator for AI response
+            const loadingElement = document.createElement('div');
+            loadingElement.classList.add('message', 'ai-message', 'loading');
+            loadingElement.textContent = '';
+            chatbox.appendChild(loadingElement);
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            try {
+                // --- Use constant for API endpoint ---
+                const response = await fetch(API_ENDPOINT_CHAT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: messageText }),
+                });
+
+                const currentLoading = chatbox.querySelector('.loading');
+                if (currentLoading) currentLoading.remove(); // Remove loading indicator
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error('API Error:', errorData);
+                    addMessage('ai', `Error: ${response.status} - ${response.statusText}`);
+                    return;
+                }
+
+                const data = await response.json();
+                addMessage('ai', data.response); // Add the actual AI response
+
+            } catch (error) {
+                const currentLoading = chatbox.querySelector('.loading');
+                if (currentLoading) currentLoading.remove(); // Remove loading indicator
+
+                console.error('Error:', error);
+                addMessage('ai', 'Error: Could not connect to the server.');
+            }
+        }
+
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') sendMessage();
+        });
+
+        // --- Fetch initial passage AND question on page load ---
+        async function loadInitialData() {
+            addMessage('ai', '', true); // Show loading indicator immediately
+
+            try {
+                 // --- Use constant for API endpoint ---
+                const response = await fetch(API_ENDPOINT_INITIAL);
+
+                const currentLoading = chatbox.querySelector('.loading');
+                if (currentLoading) currentLoading.remove(); // Remove loading indicator
+
+                if (!response.ok) {
+                     addMessage('ai', `Error loading initial data: ${response.status}`);
+                     console.error("Failed to fetch initial passage:", response.statusText);
+                     return;
+                }
+
+                const data = await response.json(); // Parse the JSON {passage, question, feedback, usage_sentences}
+
+                // 1. Add the passage
+                if (data.passage) {
+                     addMessage('ai', data.passage);
+                } else {
+                     addMessage('ai', 'Could not load the passage.');
+                }
+
+                // 2. Add the generated question (if available and not null/empty)
+                if (data.question) {
+                     // Format the question and usage sentences nicely
+                     // Using data.feedback might be better if it's assessment feedback
+                     const questionText = `Here's a vocabulary question:\n${data.question}\n\nHere is how the word is used:\n${data.usage_sentences || '(No usage sentences provided)'}`;
+                     addMessage('ai', questionText);
+                } else {
+                     // Optionally inform the user if the question couldn't be generated
+                     addMessage('ai', '(Could not automatically generate a vocabulary question for this passage.)');
+                     console.log("Initial question data missing or null in response:", data);
+                }
+
+            } catch (error) {
+                 const currentLoading = chatbox.querySelector('.loading');
+                 if (currentLoading) currentLoading.remove(); // Remove loading indicator
+
+                 console.error('Error fetching initial data:', error);
+                 addMessage('ai', 'Error loading initial passage and question.');
+            }
+        }
+
+        // Call the function to load data when the page is ready
+        document.addEventListener('DOMContentLoaded', loadInitialData);
+
+    </script>
+</body>
+</html>
