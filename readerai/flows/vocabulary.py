@@ -219,21 +219,99 @@ if __name__ == "__main__":
              question_quality=3,
              question_viability=True # Assume question is still viable despite weak usage examples
          ),
-         # ... (Include other examples 4-9 from your original) ...
-         # Example 9: Challenging word with excellent question design
-         dspy.Example(
-             passage="The professor's erudition was evident in his lecture, as he effortlessly connected literature, history, and philosophy in ways his students had never considered.",
-             challenging_word="erudition",
-             usage_sentences=(
-                 "1) 'Her erudition in classical languages impressed even the senior scholars.'\n"
-                 "2) 'Despite his erudition, he could explain complex concepts in simple terms.'"
-             ),
-             vague_score=1,
-             question="Based on how 'erudition' is used in the passage, what qualities would a person with erudition likely demonstrate in an academic setting?",
-             feedback="This question goes beyond simple definition to application and inference, encouraging deeper understanding of the concept.",
-             context_sufficiency=4,
-             question_quality=5,
-             question_viability=True
+          # Example 4: Word with multiple meanings, clear context
+        dspy.Example(
+            passage="The detective tried to ferret out the truth from the reluctant witness, using a combination of gentle persuasion and clever questioning.",
+            challenging_word="ferret",
+            usage_sentences=(
+                "1) 'The journalist spent months trying to ferret out corruption in the local government.'\n"
+                "2) 'It took us hours to ferret out all the details of what happened that night.'"
+            ),
+            vague_score=1,
+            question="In the passage, what does it mean when the detective tries to 'ferret out' the truth?",
+            feedback="This question targets a verb form of a word more commonly known as an animal, providing good context for understanding figurative language.",
+            context_sufficiency=5,
+            question_quality=5,
+            question_viability=True
+        ),
+        
+        # Example 5: Technical term with sufficient context
+        dspy.Example(
+            passage="The patient presented with acute myocardial infarction, requiring immediate intervention. The doctors noted pallor, diaphoresis, and severe chest pain radiating to the left arm.",
+            challenging_word="diaphoresis",
+            usage_sentences=(
+                "1) 'The marathon runner experienced extreme diaphoresis in the final miles of the race.'\n"
+                "2) 'Diaphoresis can be a symptom of several medical conditions including infection and hormone disorders.'"
+            ),
+            vague_score=2,
+            question="Based on the context of the medical emergency described, what physical symptom does 'diaphoresis' most likely refer to?",
+            feedback="This question requires inferring meaning from context clues in a technical passage. The question format asks for the specific symptom rather than just a definition.",
+            context_sufficiency=3,
+            question_quality=4,
+            question_viability=True
+        ),
+        
+        # Example 6: Abstract concept with metaphorical usage
+        dspy.Example(
+            passage="The old man's face was a palimpsest of experiences—joy, sorrow, triumph, and loss all etched into the lines around his eyes and mouth.",
+            challenging_word="palimpsest",
+            usage_sentences=(
+                "1) 'The ancient manuscript was a palimpsest, with newer text written over partially erased older writing.'\n"
+                "2) 'The city itself is a palimpsest, with modern buildings standing alongside structures from the colonial era.'"
+            ),
+            vague_score=1,
+            question="How is the term 'palimpsest' being used metaphorically in the passage, and what does it suggest about the old man's face?",
+            feedback="This question addresses both the literal meaning and the metaphorical application, encouraging deeper analysis of figurative language.",
+            context_sufficiency=4,
+            question_quality=5,
+            question_viability=True
+        ),
+        
+        # Example 7: Word with insufficient context
+        dspy.Example(
+            passage="The obdurate official refused to change the policy despite numerous complaints.",
+            challenging_word="obdurate",
+            usage_sentences=(
+                "1) 'He remained obdurate in his decision.'\n"
+                "2) 'Her obdurate stance on the issue frustrated her colleagues.'"
+            ),
+            vague_score=4,
+            question="What does 'obdurate' mean in the passage?",
+            feedback="Both the passage and usage sentences provide minimal context clues. The question is too direct and doesn't encourage inference or analysis.",
+            context_sufficiency=2,
+            question_quality=2,
+            question_viability=True
+        ),
+        
+        # Example 8: Word with rich context but poor question
+        dspy.Example(
+            passage="The cacophony of the bustling market—vendors shouting, children laughing, and music blaring—made it nearly impossible to hear her soft voice.",
+            challenging_word="cacophony",
+            usage_sentences=(
+                "1) 'The cacophony of the construction site drove the neighbors to complain.'\n"
+                "2) 'What seemed like cacophony to the parents was beautiful music to the teenagers.'"
+            ),
+            vague_score=1,
+            question="Define cacophony.",
+            feedback="While the context is rich and the word is appropriate, the question is too basic and doesn't encourage engagement with the context clues provided in the passage.",
+            context_sufficiency=5,
+            question_quality=2,
+            question_viability=False
+        ),
+        # Example 9: Challenging word with excellent question design
+        dspy.Example(
+            passage="The professor's erudition was evident in his lecture, as he effortlessly connected literature, history, and philosophy in ways his students had never considered.",
+            challenging_word="erudition",
+            usage_sentences=(
+                "1) 'Her erudition in classical languages impressed even the senior scholars.'\n"
+                "2) 'Despite his erudition, he could explain complex concepts in simple terms.'"
+            ),
+            vague_score=1,
+            question="Based on how 'erudition' is used in the passage, what qualities would a person with erudition likely demonstrate in an academic setting?",
+            feedback="This question goes beyond simple definition to application and inference, encouraging deeper understanding of the concept.",
+            context_sufficiency=4,
+            question_quality=5,
+            question_viability=True
          )
     ]
     # Ensure examples used for training/compilation have the 'passage' input field
