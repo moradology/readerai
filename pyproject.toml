@@ -1,7 +1,7 @@
 [project]
 name = "readerai"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI-powered reading companion for children"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -13,3 +13,13 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "uvicorn>=0.29.0",
 ]
+
+[tool.setuptools]
+packages = ["readerai"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+readerai-passages = "readerai.cli.extract_passages:main"
