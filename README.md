@@ -2,6 +2,17 @@
 
 ReaderAI leverages Large Language Models via DSPy and provides an interactive web interface using FastAPI to help users improve reading comprehension and vocabulary. Engage with text through AI-powered analysis, vocabulary question generation, and interactive feedback.
 
+## 🌟 Development Philosophy
+
+ReaderAI follows a unique development methodology that combines traditional software engineering practices with AI-assisted development. Our approach:
+
+1. **Specification-First Development**: Every feature begins with clear specifications and requirements
+2. **Architectural Decision Records**: Key design decisions are documented with context and rationale
+3. **AI-Assisted Implementation**: Features are implemented using structured prompts that guide development
+4. **Comprehensive Testing**: Rigorous testing ensures reliability across different scenarios
+
+For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## ✨ Key Features
 
   * **Initial Passage & Question:** Loads a default passage and automatically generates a relevant vocabulary question on startup.
@@ -85,3 +96,16 @@ ReaderAI leverages Large Language Models via DSPy and provides an interactive we
   * Type your answer to the question or other messages (like "hello", "vocabulary question") into the input box at the bottom.
   * Press the "Send" button or hit Enter to submit your message.
   * The AI will respond, either assessing your answer or generating a reply based on your input.
+
+## 🤝 Contributing
+
+We welcome contributions to ReaderAI! Whether you're interested in fixing bugs, adding new features, or improving documentation, your help is appreciated.
+
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide to learn about:
+- Our feature development process
+- Coding standards
+- How to create effective implementation prompts
+- Testing guidelines
+- Documentation requirements
+
+This project uses a unique specification-first approach with detailed architectural decision records and implementation prompts that guide development.
