@@ -188,10 +188,11 @@ if __name__ == "__main__":
     print("Basic Model Result:", basic_result)
 
     # Run with few shot optimized model
-    question_optimizer = dspy.BootstrapFewShotWithRandomSearch(metric=ComprehensionFlow.metric)
-    optimized_question_generator = question_optimizer.compile(
-        comp_flow, 
-        trainset=examples_with_inputs
+    compflow_optimizer = dspy.MIPROv2(metric=ComprehensionFlow.metric)
+    optimized_compflow = compflow_optimizer.compile(
+        student=comp_flow, 
+        trainset=examples_with_inputs,
+        minibatch_size=1
     )
-    optimized_result = optimized_question_generator(passage=test_passage)
+    optimized_result = optimized_compflow(passage=test_passage)
     print("Optimized Model Result:", optimized_result)

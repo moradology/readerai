@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReaderAI Chat (WebSocket)</title>
+    <style>
+        /* CSS Styles remain the same */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        #chatbox {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+            white-space: pre-wrap; /* Important for showing line breaks */
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+        .ai-message {
+            background-color: #e9e9eb;
+            color: black;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+         .error-message { /* Style for errors */
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            align-self: stretch; /* Make error messages full width */
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ccc;
+            background-color: #fff;
+        }
+        #userInput {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #sendButton {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #sendButton:hover {
+            background-color: #0056b3;
+        }
+        #sendButton:disabled { /* Style for disabled button */
+             background-color: #cccccc;
+             cursor: not-allowed;
+        }
+        /* Basic loading indicator (can be improved) */
+        .loading::after {
+            content: ' thinking...';
+            display: inline-block;
+            /* animation: loading-dots 1s steps(3, end) infinite; */ /* Optional animation */
+        }
+        /* @keyframes loading-dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        } */
+        #status {
+            padding: 5px 20px;
+            font-size: 0.8em;
+            text-align: center;
+            background-color: #ddd;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">Connecting...</div>
+    <div id="chatbox">
+        </div>
+    <div id="input-area">
+        <input type="text" id="userInput" placeholder="Type your message..." disabled>
+        <button id="sendButton" disabled>Send</button>
+    </div>
+
+    <script>
+        // --- Configuration Constants ---
+        // Make sure the protocol is ws:// (or wss:// for secure connections)
+        // and the path matches the endpoint in main.py
+        const WEBSOCKET_URL = `ws://${window.location.host}/ws`; // Dynamically uses current host/port
+
+        // --- DOM Element References ---
+        const chatbox = document.getElementById('chatbox');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const statusDiv = document.getElementById('status');
+
+        let websocket = null; // Variable to hold the WebSocket object
+        let loadingMessageElement = null; // To keep track of the "thinking" message
+
+        // --- Function to update connection status display ---
+        function updateStatus(message, isError = false) {
+            statusDiv.textContent = message;
+            statusDiv.style.backgroundColor = isError ? '#f8d7da' : '#ddd';
+            statusDiv.style.color = isError ? '#721c24' : '#555';
+        }
+
+        // --- Function to add a message to the chatbox ---
+        function addMessage(sender, message, isError = false) {
+             // Remove previous loading indicator if it exists
+            if (loadingMessageElement) {
+                loadingMessageElement.remove();
+                loadingMessageElement = null;
+            }
+
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            if (isError) {
+                 messageElement.classList.add('error-message');
+                 messageElement.classList.add('ai-message'); // Style like AI for now
+            } else if (sender === 'user') {
+                messageElement.classList.add('user-message');
+            } else {
+                messageElement.classList.add('ai-message');
+            }
+
+            messageElement.textContent = message; // Use textContent to prevent XSS
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight; // Scroll to bottom
+
+             // If this is an AI message signaling it's thinking, store reference
+            // (This simple version adds ' thinking...' directly in addMessage)
+            // if (sender === 'ai' && message === '') { // Simple loading state
+            //    messageElement.classList.add('loading');
+            //    loadingMessageElement = messageElement;
+            //}
+        }
+
+         // --- Function to add a temporary loading message ---
+         function showLoadingIndicator() {
+            if (loadingMessageElement) return; // Avoid multiple indicators
+            loadingMessageElement = document.createElement('div');
+            loadingMessageElement.classList.add('message', 'ai-message', 'loading');
+            // loadingMessageElement.textContent = ''; // Content is added via CSS ::after
+            chatbox.appendChild(loadingMessageElement);
+            chatbox.scrollTop = chatbox.scrollHeight;
+         }
+
+
+        // --- Function to send message via WebSocket ---
+        function sendMessage() {
+            const messageText = userInput.value.trim();
+            if (!messageText || !websocket || websocket.readyState !== WebSocket.OPEN) {
+                console.log("Cannot send message: No text or WebSocket not open.");
+                return;
+            }
+
+            addMessage('user', messageText); // Display user message immediately
+            userInput.value = ''; // Clear input
+            showLoadingIndicator(); // Show "thinking..." message
+
+            try {
+                // Send message to server as JSON
+                const messagePayload = JSON.stringify({
+                    type: "chat",
+                    message: messageText
+                });
+                websocket.send(messagePayload);
+                console.log("Message sent:", messagePayload);
+            } catch (error) {
+                 console.error('Error sending message via WebSocket:', error);
+                 addMessage('ai', 'Error sending message. Please check connection.', true);
+                 if (loadingMessageElement) loadingMessageElement.remove(); // Clean up loading indicator on send error
+            }
+        }
+
+        // --- Function to connect to WebSocket ---
+        function connectWebSocket() {
+            updateStatus("Connecting...");
+            websocket = new WebSocket(WEBSOCKET_URL);
+
+            websocket.onopen = (event) => {
+                console.log("WebSocket connection opened:", event);
+                updateStatus("Connected");
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                // No need to fetch initial data here, server will send it via onmessage
+            };
+
+            websocket.onmessage = (event) => {
+                console.log("WebSocket message received:", event.data);
+                 if (loadingMessageElement) { // Remove loading indicator when response arrives
+                      loadingMessageElement.remove();
+                      loadingMessageElement = null;
+                 }
+                try {
+                    const data = JSON.parse(event.data);
+                    // --- Handle different message types from server ---
+                    if (data.type === 'initial') {
+                        // 1. Add the passage
+                        if (data.payload?.passage) {
+                            addMessage('ai', `Passage:\n${data.payload.passage}`);
+                        } else {
+                            addMessage('ai', 'Could not load the passage.', true);
+                        }
+                        // 2. Add the initial question (if available)
+                        if (data.payload?.question && data.payload.question.toLowerCase().indexOf("error:") === -1) {
+                             const questionText = `Here's a vocabulary question:\n${data.payload.question}\n\nUsage Examples:\n${data.payload.usage_sentences || '(No usage sentences provided)'}`;
+                             addMessage('ai', questionText);
+                         } else if (data.payload?.question) { // Handle error messages for question
+                             addMessage('ai', `Initial Question Status: ${data.payload.question}`, true);
+                         }
+                         else {
+                            addMessage('ai', '(Could not automatically generate an initial vocabulary question.)');
+                        }
+                    } else if (data.type === 'chat') {
+                        addMessage('ai', data.payload); // Display standard chat/assessment response
+                    } else if (data.type === 'error') {
+                         addMessage('ai', `Server Error: ${data.payload}`, true);
+                    } else {
+                         addMessage('ai', `Unknown message type received: ${data.type}`, true);
+                    }
+                } catch (error) {
+                    console.error('Error parsing WebSocket message or handling data:', error);
+                    addMessage('ai', 'Received malformed message from server.', true);
+                     // Display raw data if parsing fails and it's a string
+                     if (typeof event.data === 'string') {
+                          addMessage('ai', `Raw data: ${event.data}`);
+                     }
+                }
+            };
+
+            websocket.onerror = (event) => {
+                console.error("WebSocket error observed:", event);
+                updateStatus("Connection Error", true);
+                addMessage('ai', 'WebSocket connection error. Please try refreshing.', true);
+                userInput.disabled = true;
+                sendButton.disabled = true;
+            };
+
+            websocket.onclose = (event) => {
+                console.log("WebSocket connection closed:", event);
+                updateStatus(`Disconnected: ${event.reason || 'No reason given'} (Code: ${event.code})`, !event.wasClean);
+                userInput.disabled = true;
+                sendButton.disabled = true;
+                if (loadingMessageElement) loadingMessageElement.remove(); // Clean up loading if connection closes mid-wait
+
+                // Optional: Attempt to reconnect after a delay
+                // setTimeout(connectWebSocket, 5000); // Reconnect every 5 seconds
+            };
+        }
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                 event.preventDefault(); // Prevent default form submission if inside a form
+                 sendMessage();
+            }
+        });
+
+        // --- Initial Connection ---
+        // Use DOMContentLoaded to ensure the page structure is ready
+        document.addEventListener('DOMContentLoaded', () => {
+             connectWebSocket(); // Initiate WebSocket connection when the page loads
+        });
+
+    </script>
+</body>
+</html>
