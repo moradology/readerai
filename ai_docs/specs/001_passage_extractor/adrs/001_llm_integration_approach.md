@@ -1,8 +1,8 @@
 # ADR: LLM Integration Approach for Passage Extractor
 
-**Decision ID:** 001-001  
-**Status:** Accepted  
-**Date:** 2025-04-11  
+**Decision ID:** 001-001
+**Status:** Accepted
+**Date:** 2025-04-11
 **Authors:** ReaderAI Team
 
 ## Context
@@ -18,6 +18,7 @@ We need to decide how to implement the passage extractor using LLM technology, s
 ## Options Considered
 
 - **Option 1: Pure DSPy Implementation** – Implement the passage extractor as a DSPy module, leveraging its prompt engineering and optimization capabilities.
+
   - **Pros:** Consistent with the flows architecture, leverages DSPy optimizations for prompt improvement, follows project standards, better integration with other components.
   - **Cons:** Potential learning curve if team is new to DSPy, might be more complex for a relatively straightforward task.
 
@@ -27,19 +28,19 @@ We need to decide how to implement the passage extractor using LLM technology, s
 
 ## Risks & Assumptions
 
-**Risks:**  
+**Risks:**
 
 - Choosing DSPy might slow initial development if the team is not familiar with the framework.
 - The hybrid approach may lead to integration challenges with downstream components.
 - Either approach might require refactoring as LLM capabilities evolve.
 
-**Assumptions:**  
+**Assumptions:**
 
 - The passage extractor will need to be maintained and evolved over time.
 - The quality of passages will significantly impact downstream components.
 - DSPy provides meaningful benefits for prompt optimization in this use case.
 
-**Dependencies:**  
+**Dependencies:**
 
 - DSPy framework and its compatibility with our chosen LLM provider.
 - Experience level of the development team with DSPy.
@@ -72,14 +73,16 @@ This decision is based on the following factors:
 
 ## Consequences
 
-**Positive consequences:**  
+**Positive consequences:**
+
 - Maintains architectural consistency with other flows in the system
 - Creates clear interfaces for downstream components
 - Follows established patterns for LLM interaction
 - Provides a pathway for future optimization if needed
 - Reduces integration friction with other DSPy-based components
 
-**Negative consequences:**  
+**Negative consequences:**
+
 - Slightly more structured implementation compared to direct prompting
 - Requires basic understanding of DSPy signatures and modules
 - May introduce some overhead compared to raw prompt implementations

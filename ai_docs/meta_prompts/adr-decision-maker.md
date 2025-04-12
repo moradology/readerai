@@ -1,6 +1,7 @@
 # ADR Decision Maker Prompt
 
 ## Purpose
+
 This prompt helps stakeholders review proposed Architecture Decision Records (ADRs), evaluate options, and complete the ADRs with final decisions, rationales, and consequences.
 
 ## Prompt Template
@@ -44,6 +45,7 @@ You are an experienced technical architect and educational technology expert hel
 ## Usage Instructions
 
 1. Replace the placeholder variables:
+
    - `{adr_content}` with the full content of the proposed ADR being reviewed
    - `{additional_context}` with any relevant new information, constraints, or factors to consider (optional)
    - `{stakeholder_perspectives}` with input from project stakeholders on their preferences, priorities, or concerns (optional)
@@ -83,9 +85,9 @@ You are an experienced technical architect and educational technology expert hel
 ```
 # ADR: [Title]
 
-**Decision ID:** [ID]  
-**Status:** Accepted  
-**Date:** [Today's Date]  
+**Decision ID:** [ID]
+**Status:** Accepted
+**Date:** [Today's Date]
 **Authors:** [Original Authors]
 
 ## Context
@@ -108,12 +110,12 @@ You are an experienced technical architect and educational technology expert hel
 
 ## Consequences
 
-**Positive consequences:**  
+**Positive consequences:**
 - [Detailed positive consequence 1]
 - [Detailed positive consequence 2]
 - [Detailed positive consequence 3]
 
-**Negative consequences:**  
+**Negative consequences:**
 - [Detailed negative consequence 1]
 - [Detailed negative consequence 2]
 

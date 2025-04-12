@@ -5,6 +5,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 ## Stage 1: Core Passage Extractor Flow
 
 ### 1.1: Define DSPy Signatures
+
 - Create `PassageSegmentation` signature with:
   - Input field for text chunk
   - Input field for target paragraph length
@@ -15,6 +16,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
   - Output field for feedback
 
 ### 1.2: Implement the Flow Module
+
 - Create the `PassageExtractorFlow` class extending `dspy.Module`
 - Initialize with segmenter and quality evaluator components
 - Implement the `forward()` method to:
@@ -23,6 +25,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
   - Return a structured prediction object
 
 ### 1.3: Create Testing Examples and Harness
+
 - Develop test examples with various text patterns
 - Setup the main block with:
   - Environment configuration
@@ -31,6 +34,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
   - Optional integration with MIPROv2 optimizer
 
 ### 1.4: Document the Flow API
+
 - Add detailed docstrings for all methods
 - Include type annotations for all parameters
 - Document the expected format of input and output
@@ -38,11 +42,13 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 ## Stage 2: Text Chunking Module
 
 ### 2.1: Define the TextChunker Class
+
 - Create the class with configurable chunk size and overlap
 - Implement helper methods for finding paragraph boundaries
 - Add text preprocessing with common patterns (Gutenberg, etc.)
 
 ### 2.2: Implement the Streaming Chunking Algorithm
+
 - Create the main `chunk_stream()` method that:
   - Processes text input as a stream (line by line)
   - Maintains a text buffer of appropriate size
@@ -52,6 +58,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
   - Handles edge cases (short texts, no paragraph breaks)
 
 ### 2.3: Implement the Legacy Chunking Algorithm
+
 - Create a `chunk_text()` method that:
   - Takes a full text string as input
   - Leverages the streaming approach internally
@@ -59,6 +66,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
   - Provides a simple interface for non-streaming use cases
 
 ### 2.4: Add Preprocessing Rules
+
 - Implement regex patterns for common text cleanup:
   - Normalize whitespace and line endings
   - Remove publication metadata
@@ -67,12 +75,14 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
   - Clean up special characters and formatting markers
 
 ### 2.5: Add Error Handling and Progress Reporting
+
 - Implement error handling for corrupted or malformed text
 - Add support for very long lines or binary data
 - Implement progress reporting for long-running processes
 - Add safety mechanisms to prevent infinite loops or buffer overflows
 
 ### 2.6: Test the Chunker
+
 - Create unit tests with various input patterns:
   - Short texts below the chunk threshold
   - Long texts requiring multiple chunks
@@ -84,6 +94,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 ## Stage 3: Command-Line Interface
 
 ### 3.1: Create the CLI Structure
+
 - Setup the argument parser with all required options:
   - Input/output handling options
   - Chunking parameters
@@ -95,6 +106,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 - Add robust error handling and reporting
 
 ### 3.2: Implement Stream Processing
+
 - Create a `process_stream()` function that:
   - Takes input and output streams as parameters
   - Uses the TextChunker's streaming capabilities
@@ -105,6 +117,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
   - Handles interruptions gracefully
 
 ### 3.3: Integrate Chunker and Flow
+
 - Connect the TextChunker with the PassageExtractorFlow
 - Track chunk origins in passage metadata
 - Add timestamps and processing information
@@ -112,6 +125,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 - Enable verbose mode for detailed processing information
 
 ### 3.4: Format Output Handling
+
 - Create JSONL conversion functionality
 - Implement text cleaning for special characters
 - Handle formatting marker removal options
@@ -120,6 +134,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 - Add flush operations for immediate output
 
 ### 3.5: Add Usage Documentation
+
 - Create clear help text for the command-line options
 - Add examples of common usage patterns
 - Document environment requirements
@@ -128,12 +143,14 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 ## Stage 4: Integration and Testing
 
 ### 4.1: Setup Package Structure
-- Create any missing __init__.py files
+
+- Create any missing **init**.py files
 - Ensure proper module imports
 - Register CLI script entry point in pyproject.toml
 - Make CLI script executable
 
 ### 4.2: End-to-End Testing
+
 - Test with various input sources:
   - Project Gutenberg texts of various sizes
   - Plain text files with different formats
@@ -144,6 +161,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 - Test interruption and resumption behavior
 
 ### 4.3: Performance Testing and Optimization
+
 - Test with very large texts (complete novels, etc.)
 - Measure and optimize token usage
 - Benchmark processing times and memory usage
@@ -153,6 +171,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 - Test with different LLM models
 
 ### 4.4: Error Handling and Recovery
+
 - Add robust error handling for all failure modes:
   - API errors and rate limiting
   - Network interruptions
@@ -168,6 +187,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 ## Stage 5: Documentation and Refinement
 
 ### 5.1: Create Comprehensive User Documentation
+
 - Document complete CLI usage with detailed examples
 - Create diagrams explaining the streaming architecture
 - Explain all options and their effects with examples
@@ -177,6 +197,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 - Include advanced usage patterns and techniques
 
 ### 5.2: Enhance Validation and Text Processing
+
 - Refine quality metrics and scoring
 - Add additional validation options
 - Implement filtering options for low-quality passages
@@ -187,6 +208,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
   - Intelligent paragraph boundary detection
 
 ### 5.3: Add Telemetry and Observability
+
 - Track key metrics for optimization:
   - Success rate for different text types
   - Processing speed for different chunk sizes
@@ -197,6 +219,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 - Add detailed logging options for debugging
 
 ### 5.4: Performance Optimization
+
 - Implement configurable stream buffering
 - Optimize memory usage during processing
 - Add parallel processing options for multi-core systems
@@ -204,6 +227,7 @@ Below is a step-by-step guide to implementing the Passage Extractor feature, bro
 - Add options to balance speed vs. quality
 
 ### 5.5: Final Code Review and Maintenance
+
 - Ensure code follows project style guidelines
 - Check for potential performance optimizations
 - Verify all edge cases are handled

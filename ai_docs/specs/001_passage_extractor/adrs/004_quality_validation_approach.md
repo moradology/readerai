@@ -1,8 +1,8 @@
 # ADR: Quality Validation Approach for Extracted Passages
 
-**Decision ID:** 001-004  
-**Status:** Accepted  
-**Date:** 2025-04-11  
+**Decision ID:** 001-004
+**Status:** Accepted
+**Date:** 2025-04-11
 **Authors:** ReaderAI Team
 
 ## Context
@@ -18,6 +18,7 @@ We need to decide whether to implement an automated validation suite with progra
 ## Options Considered
 
 - **Option 1: Automated Validation Suite** – Implement programmatic validators that check passages against quantifiable aspects of the quality metrics.
+
   - **Pros:** Consistent and reproducible validation, predictable behavior, no additional LLM costs, faster execution, integration with automated testing.
   - **Cons:** Difficult to implement for subjective metrics like "coherence" or "natural boundaries," limited scope of validation, potentially rigid criteria.
 
@@ -27,19 +28,19 @@ We need to decide whether to implement an automated validation suite with progra
 
 ## Risks & Assumptions
 
-**Risks:**  
+**Risks:**
 
 - Automated validation might miss subtle quality issues that impact educational value.
 - LLM-based evaluation might be inconsistent or produce false positives/negatives.
 - Either approach might slow down the extraction pipeline.
 
-**Assumptions:**  
+**Assumptions:**
 
 - Quality validation is necessary for maintaining educational effectiveness.
 - Some quality aspects are difficult to measure programmatically.
 - The validation approach should scale with the volume of content.
 
-**Dependencies:**  
+**Dependencies:**
 
 - Educational standards for reading comprehension.
 - Performance requirements for the passage extraction process.
@@ -65,20 +66,23 @@ This decision is supported by the following reasons:
 5. **Educational Value Prioritization**: Since educational quality is our primary concern, using the most capable validator (even at some additional cost) aligns with the project's core mission.
 
 To address the known drawbacks of LLM-based validation, we will:
+
 - Implement structured scoring prompts with explicit criteria for each quality dimension
 - Batch process passages to reduce per-passage costs
 - Store validation results to enable analysis and improvement over time
 
 ## Consequences
 
-**Positive consequences:**  
+**Positive consequences:**
+
 - Enables accurate assessment of subjective quality metrics critical for educational value
 - Provides detailed feedback on passage quality that can guide improvements
 - Flexible approach that can evolve as quality requirements change
 - Maintains architectural consistency with other system components
 - Can evaluate complex quality factors that would be impossible to check programmatically
 
-**Negative consequences:**  
+**Negative consequences:**
+
 - Introduces additional LLM usage costs beyond the initial extraction process
 - May produce somewhat inconsistent evaluations between runs
 - Requires careful prompt engineering to ensure reliable assessment

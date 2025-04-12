@@ -11,7 +11,7 @@
 - **Error handling**: Ask for forgiveness rather than permission, and use try/except blocks with error logging
 - **Naming conventions**: snake_case for variables/functions, PascalCase for classes
 - **Imports**: Group by standard library → 3rd party → project modules → relative paths
-- **Tests**: Files named test_*.py following pytest conventions; prefer functions for tests unless there is a good reason to use pytest classes
+- **Tests**: Files named test\_\*.py following pytest conventions; prefer functions for tests unless there is a good reason to use pytest classes
 - **Type hints**: Use Python type annotations throughout
 
 ## Libraries
@@ -19,13 +19,13 @@
 - **FastAPI Framework**: API with WebSocket support for chat interface
 - **DSPy**: Framework for LLM prompting with Google's Gemini models
 
-
 ## Project Architecture
+
 - **Flows**: LLM-centric workflows that serve as states in our larger application and use DSPy to describe interactions
-    1. Modular Design: Each flow encapsulates specific LLM interaction patterns
-    2. Flows are built with examples stored in `if __name__ == "__main__":` blocks to enable easy testing
-    3. Flows are meant to encapsulate both user-LLM interactions and LLM-LLM evaluations of produced outputs
-    4. Flows can encapsulate multiple steps, including validation steps conducted by the LLM. These can be stored as the `classmethod` `metric` for our `dspy.Module` to keep related portions of the code close together.
+  1. Modular Design: Each flow encapsulates specific LLM interaction patterns
+  2. Flows are built with examples stored in `if __name__ == "__main__":` blocks to enable easy testing
+  3. Flows are meant to encapsulate both user-LLM interactions and LLM-LLM evaluations of produced outputs
+  4. Flows can encapsulate multiple steps, including validation steps conducted by the LLM. These can be stored as the `classmethod` `metric` for our `dspy.Module` to keep related portions of the code close together.
 
 ## Software Engineering Design Principles
 
@@ -57,4 +57,4 @@
 - Liskov Substitution Principle: Derived classes should be substitutable
 - Interface Segregation Principle: Many client-specific interfaces over one
 - Dependency Inversion Principle: Depend on abstractions, not concretions
-    - This can be as simple as heavy reliance on functions
+  - This can be as simple as heavy reliance on functions

@@ -1,8 +1,8 @@
 # ADR: Passage Data Format for Extracted Content
 
-**Decision ID:** 001-003  
-**Status:** Accepted  
-**Date:** 2025-04-11  
+**Decision ID:** 001-003
+**Status:** Accepted
+**Date:** 2025-04-11
 **Authors:** ReaderAI Team
 
 ## Context
@@ -18,6 +18,7 @@ We need to decide on the data structure and format for storing extracted passage
 ## Options Considered
 
 - **Option 1: JSON Structure** – Store passages and metadata in a structured JSON format.
+
   - **Pros:** Flexible schema that can evolve over time, widely supported in programming languages, easily parseable by other components, good for API responses, strong tooling support.
   - **Cons:** More verbose than plain text, less human-readable for content review, potentially less efficient for storage.
 
@@ -27,19 +28,19 @@ We need to decide on the data structure and format for storing extracted passage
 
 ## Risks & Assumptions
 
-**Risks:**  
+**Risks:**
 
 - Chosen format might not accommodate all future metadata requirements.
 - Format might be difficult for certain downstream components to process efficiently.
 - Human review processes might be hindered by overly technical formats.
 
-**Assumptions:**  
+**Assumptions:**
 
 - Downstream components will need structured access to both passage text and metadata.
 - The format should support the metadata enhancement requirements (concepts, entities, reading level).
 - The amount of metadata will grow over time as the system evolves.
 
-**Dependencies:**  
+**Dependencies:**
 
 - Requirements of downstream components (comprehension, vocabulary, TTS).
 - Content review processes by educational experts.
@@ -68,7 +69,8 @@ While Markdown would offer better human readability, we can address this concern
 
 ## Consequences
 
-**Positive consequences:**  
+**Positive consequences:**
+
 - Enables efficient streaming between components via stdout/pipe mechanisms
 - Standardized format with consistent parsing across all system components
 - Flexible schema can evolve to accommodate new metadata requirements
@@ -76,7 +78,8 @@ While Markdown would offer better human readability, we can address this concern
 - Compatible with modern data processing tools and techniques
 - Well-suited for both file storage and API responses
 
-**Negative consequences:**  
+**Negative consequences:**
+
 - Less immediately human-readable than Markdown for educational content review
 - Slightly more verbose storage requirements compared to plain text
 - May require additional tooling to convert to human-friendly formats when needed

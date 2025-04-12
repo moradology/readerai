@@ -1,6 +1,7 @@
 # Spec-to-ADR Prompt
 
 ## Purpose
+
 This prompt helps identify and generate Architecture Decision Records (ADRs) from specification documents by analyzing key technical decisions that need to be made, while ensuring alignment with project guidelines and overall vision.
 
 ## Prompt Template
@@ -39,27 +40,27 @@ You are an experienced software architect specializing in AI systems. Your task 
    - Note any tensions or trade-offs with established principles
 
 4. Format each decision point like this:
-   
+
    ### Decision Point: [Brief title]
    **What needs to be decided:** [1-2 sentence description]
-   
+
    **Related project principles:** [Identify which project principles/guidelines this decision impacts]
-   
+
    **Options:**
    1. **[Option 1 Name]**
       - Description: [Brief description]
       - Pros: [Bullet list]
       - Cons: [Bullet list]
       - Alignment: [How well this aligns with project principles]
-   
+
    2. **[Option 2 Name]**
       - Description: [Brief description]
       - Pros: [Bullet list]
       - Cons: [Bullet list]
       - Alignment: [How well this aligns with project principles]
-   
+
    **Key considerations:** [Any important factors to consider]
-   
+
    **Questions for stakeholders:** [1-3 specific questions you need answered to make this decision]
 
 5. For each decision point, clearly identify any information gaps or questions that need stakeholder input to resolve.
@@ -70,6 +71,7 @@ You are an experienced software architect specializing in AI systems. Your task 
 ## Usage Instructions
 
 1. Replace the placeholder variables:
+
    - `{project_overview_content}` with the content from ai_docs/project_overview.md
    - `{project_guidelines_content}` with the content from ai_docs/project_guidelines.md
    - `{specification_content}` with the content of the referenced specification document
@@ -93,7 +95,7 @@ You are an experienced software architect specializing in AI systems. Your task 
 ## Decision Point 1: [Title]
 **What needs to be decided:** [Description]
 
-**Related project principles:** 
+**Related project principles:**
 - [Principle 1]
 - [Principle 2]
 

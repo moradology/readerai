@@ -72,7 +72,7 @@ cat war_and_peace.txt | readerai-passages --max_chunk_size 20000 --chunk_overlap
 ## Command-Line Options
 
 ```
-usage: readerai-passages [-h] [--output_file OUTPUT_FILE] [--min_paragraphs MIN_PARAGRAPHS] 
+usage: readerai-passages [-h] [--output_file OUTPUT_FILE] [--min_paragraphs MIN_PARAGRAPHS]
                         [--max_paragraphs MAX_PARAGRAPHS] [--validate] [--no-validate]
                         [--max_chunk_size MAX_CHUNK_SIZE] [--chunk_overlap CHUNK_OVERLAP]
                         [--verbose] [--model MODEL] [--clean-text] [--strip-formatting]
@@ -109,6 +109,7 @@ The output is in line-delimited JSON (JSONL) format, with each line containing a
 ```
 
 Each passage includes:
+
 - `title`: A descriptive title for the passage
 - `content`: The text content of the passage
 - `chunk_index`: Which chunk of the original text this passage came from
@@ -209,12 +210,12 @@ echo "Processing corpus of $(find "$CORPUS_DIR" -name "*.txt" | wc -l) books..."
 for book in "$CORPUS_DIR"/*.txt; do
   basename=$(basename "$book" .txt)
   echo "$(date +"%Y-%m-%d %H:%M:%S") - Starting $basename..."
-  
+
   cat "$book" | readerai-passages \
     --output_file "$OUTPUT_DIR/$basename.jsonl" \
     --verbose \
     --no-validate
-    
+
   echo "$(date +"%Y-%m-%d %H:%M:%S") - Completed $basename"
 done
 

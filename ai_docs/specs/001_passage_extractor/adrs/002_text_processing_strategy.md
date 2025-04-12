@@ -1,8 +1,8 @@
 # ADR: Text Processing Strategy for Passage Extractor
 
-**Decision ID:** 001-002  
-**Status:** Accepted  
-**Date:** 2025-04-11  
+**Decision ID:** 001-002
+**Status:** Accepted
+**Date:** 2025-04-11
 **Authors:** ReaderAI Team
 
 ## Context
@@ -18,6 +18,7 @@ We need to decide whether to handle text preprocessing primarily through the LLM
 ## Options Considered
 
 - **Option 1: LLM-centric Processing** – Rely primarily on the LLM to clean and process text by including detailed instructions within the segmentation prompt.
+
   - **Pros:** Simplifies implementation, reduces code complexity, leverages LLM's understanding of text structure, more adaptable to various text formats.
   - **Cons:** Less control over specific processing steps, potentially inconsistent results, higher token usage (and potentially cost), more complex prompts to maintain.
 
@@ -27,19 +28,19 @@ We need to decide whether to handle text preprocessing primarily through the LLM
 
 ## Risks & Assumptions
 
-**Risks:**  
+**Risks:**
 
 - LLM-centric approach may produce inconsistent results across different inputs or model versions.
 - Rule-based approach may fail on unexpected input formats.
 - Either approach might miss important content or incorrectly retain irrelevant content.
 
-**Assumptions:**  
+**Assumptions:**
 
 - Project Gutenberg texts will be a common source and have predictable formatting patterns.
 - The quality of preprocessing directly impacts the quality of passage segmentation.
 - Processing time is less critical than accuracy for this component.
 
-**Issues:**  
+**Issues:**
 
 - The variety and unpredictability of input text formats from different sources.
 
@@ -60,6 +61,7 @@ Based on stakeholder input and technical considerations, we have decided to impl
 The hybrid approach will:
 
 1. Implement a lightweight rule-based pipeline specifically targeting known text formats (particularly Project Gutenberg) for:
+
    - Removal of common license headers and footers
    - Elimination of publication metadata and transcriber notes
    - Basic text normalization (whitespace, encoding issues)
@@ -83,7 +85,8 @@ This decision is supported by:
 
 ## Consequences
 
-**Positive consequences:**  
+**Positive consequences:**
+
 - Reduces token usage and associated costs by filtering obvious non-content before LLM processing
 - Provides consistent handling of common text sources like Project Gutenberg
 - Maintains flexibility for processing diverse text formats
@@ -91,7 +94,8 @@ This decision is supported by:
 - Allows incremental improvement of rule-based preprocessing as new patterns are identified
 - Better preservation of educational content by applying targeted rules for known formats
 
-**Negative consequences:**  
+**Negative consequences:**
+
 - Slightly more complex implementation than a pure LLM approach
 - Requires maintenance of both rule-based preprocessing code and LLM prompts
 - May require occasional updates to rules as source formats evolve

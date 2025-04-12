@@ -1,73 +1,73 @@
 # ADR: Transaction Storage Technology for Event-Driven Visa DPS Forward Service
 
-**Decision ID:** {Unique ID or number}  
-**Status:** {Proposed | Accepted | Rejected | Deprecated | Superseded by ADR NN}  
-**Date:** {YYYY-MM-DD}  
+**Decision ID:** {Unique ID or number}
+**Status:** {Proposed | Accepted | Rejected | Deprecated | Superseded by ADR NN}
+**Date:** {YYYY-MM-DD}
 **Authors:** {List of authors}
 
 ## Context
 
-*Briefly describe why this decision is needed. Include relevant background or any driving factors.*
+_Briefly describe why this decision is needed. Include relevant background or any driving factors._
 
 ## Decision Statement
 
-*State the decision made, ideally in one sentence (e.g., "Adopt [Technology/Approach] for [Purpose]").*
+_State the decision made, ideally in one sentence (e.g., "Adopt [Technology/Approach] for [Purpose]")._
 
 ## Options Considered
 
-*Summarize the options or alternatives considered, along with their pros and cons:*
+_Summarize the options or alternatives considered, along with their pros and cons:_
 
-- **Option 1: {Option Name}** – *Short description of this option.*  
-  - **Pros:** *Key advantages (e.g., meets requirements, easy implementation).*  
-  - **Cons:** *Key disadvantages (e.g., higher cost, added complexity).*  
-- **Option 2: {Option Name}** – *Short description of this option.*  
-  - **Pros:** *...*  
-  - **Cons:** *...*  
-<!-- Add or remove options as needed -->
+- **Option 1: {Option Name}** – _Short description of this option._
+  - **Pros:** _Key advantages (e.g., meets requirements, easy implementation)._
+  - **Cons:** _Key disadvantages (e.g., higher cost, added complexity)._
+- **Option 2: {Option Name}** – _Short description of this option._
+  - **Pros:** _..._
+  - **Cons:** _..._
+  <!-- Add or remove options as needed -->
 
 ## Risks & Assumptions
 
-*Identify any relevant risks, assumptions, issues, or dependencies for this decision:*
+_Identify any relevant risks, assumptions, issues, or dependencies for this decision:_
 
-**Risks:**  
+**Risks:**
 
-- {Risk 1}  
-- {Risk 2}  
+- {Risk 1}
+- {Risk 2}
 
-**Assumptions:**  
+**Assumptions:**
 
-- {Assumption 1}  
-- {Assumption 2}  
+- {Assumption 1}
+- {Assumption 2}
 
-**Issues (if any):**  
+**Issues (if any):**
 
-- {Issue 1 (if applicable)}  
+- {Issue 1 (if applicable)}
 
-**Dependencies (if any):**  
+**Dependencies (if any):**
 
-- {Dependency 1 (if applicable)}  
+- {Dependency 1 (if applicable)}
 
 ## Decision Rationale
 
-*Explain why the chosen option was selected over the others. Include key reasoning, supporting data, or decision drivers that justify this choice.*
+_Explain why the chosen option was selected over the others. Include key reasoning, supporting data, or decision drivers that justify this choice._
 
 ## Consequences
 
-*Outline the implications of this decision:*
+_Outline the implications of this decision:_
 
-**Positive consequences:**  
+**Positive consequences:**
 
-- {Positive consequence 1 (e.g., expected benefit or improvement)}  
-- {Positive consequence 2}  
+- {Positive consequence 1 (e.g., expected benefit or improvement)}
+- {Positive consequence 2}
 
-**Negative consequences:**  
+**Negative consequences:**
 
-- {Negative consequence 1 (e.g., potential drawback or trade-off)}  
-- {Negative consequence 2}  
+- {Negative consequence 1 (e.g., potential drawback or trade-off)}
+- {Negative consequence 2}
 
 ## Decision Log
 
-*Track changes to this decision over time (e.g., status changes, updates, or superseding decisions):*
+_Track changes to this decision over time (e.g., status changes, updates, or superseding decisions):_
 
-- {YYYY-MM-DD} – {Decision status or change (e.g., *Accepted*, *Amended*, *Superseded by ADR-XYZ*)}  
-- {YYYY-MM-DD} – {...} 
+- {YYYY-MM-DD} – {Decision status or change (e.g., _Accepted_, _Amended_, _Superseded by ADR-XYZ_)}
+- {YYYY-MM-DD} – {...}

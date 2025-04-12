@@ -115,6 +115,6 @@
 
 ## Version History
 
-| Version | Date | Author | Notes |
-|---------|------|--------|-------|
-| 0.1 | [DATE] | [NAME] | Initial draft |
+| Version | Date   | Author | Notes         |
+| ------- | ------ | ------ | ------------- |
+| 0.1     | [DATE] | [NAME] | Initial draft |

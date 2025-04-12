@@ -5,23 +5,27 @@ This document provides a brief overview of the streaming implementation for the 
 ## Completed Changes
 
 1. **TextChunker Streaming**
+
    - Implemented `chunk_stream()` method that processes text line-by-line
    - Optimized buffer management to maintain minimal memory footprint
    - Added error handling for malformed input, very long lines, and encodings
    - Added progress reporting for real-time feedback
 
 2. **CLI Enhancements**
+
    - Added verbose mode for detailed progress reporting
    - Implemented model selection for different LLM backends
    - Added text cleaning options for special characters and formatting
    - Enhanced error handling and recovery for interruptions
 
 3. **Text Cleaning**
+
    - Created a configurable system for handling special Unicode characters
    - Added options to strip formatting characters like underscores and asterisks
    - Ensured all output uses ASCII equivalents for broader compatibility
 
 4. **Performance Optimizations**
+
    - Added detailed performance metrics and processing statistics
    - Implemented flush operations for immediate output
    - Enhanced error recovery mechanisms
@@ -63,6 +67,7 @@ cat war_and_peace.txt | readerai-passages \
 ## Next Steps
 
 Potential future enhancements:
+
 1. Parallel processing of multiple chunks
 2. Intelligent buffering strategies
 3. Enhanced text normalization for different languages
