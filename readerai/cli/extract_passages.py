@@ -9,26 +9,16 @@ Uses a streaming approach for memory-efficient processing of large files.
 
 import argparse
 import json
-import os
 import re
 import sys
 import time
 from typing import TextIO
 
-import dspy
 from dotenv import load_dotenv
 
-# Try to import the flow and chunker
-try:
-    from ..flows.passage_extractor import PassageExtractorFlow
-    from ..utils.text_chunker import TextChunker
-except ImportError:
-    # For case when running directly
-    sys.path.append(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    )
-    from readerai.flows.passage_extractor import PassageExtractorFlow
-    from readerai.utils.text_chunker import TextChunker
+from readerai.flows.passage_extractor import PassageExtractorFlow
+from readerai.utils.dspy_config import configure_dspy
+from readerai.utils.text_chunker import TextChunker
 
 
 def clean_text(text: str, clean_chars=True, strip_formatting=False) -> str:
@@ -275,21 +265,13 @@ def main() -> int:
     # Load environment variables
     load_dotenv()
 
-    # Configure DSPy
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        print(
-            "Error: GOOGLE_API_KEY not found. Please set it in your .env file.",
-            file=sys.stderr,
-        )
-        return 1
-
+    # Configure DSPy using the utility function
     try:
-        llm = dspy.LM(args.model, api_key=api_key)
-        dspy.settings.configure(lm=llm)
-    except Exception as e:
-        print(f"Error configuring DSPy with model {args.model}: {e}", file=sys.stderr)
-        print("Please check your model configuration and API key.", file=sys.stderr)
+        # Call the configure_dspy utility function, passing the model from args
+        configure_dspy(model_name=args.model)
+
+    except (ValueError, Exception):  # Catch errors from configure_dspy
+        # Error messages are printed within configure_dspy
         return 1
 
     # Inform about stream processing

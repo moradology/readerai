@@ -6,18 +6,14 @@ It divides longer texts into self-contained segments that maintain narrative int
 """
 
 import json
-import os
 from typing import Any
 
 import dspy
 
 # Import TEST_PASSAGE for testing, with fallback
 try:
-    from ..constants import TEST_PASSAGE
+    from readerai.constants import TEST_PASSAGE
 except ImportError:
-    print(
-        "Warning: Could not import TEST_PASSAGE from readerai.constants. Using default."
-    )
     TEST_PASSAGE = "Default passage for testing extraction functionality."
 
 # --- DSPy Signatures ---
@@ -240,19 +236,9 @@ class PassageExtractorFlow(dspy.Module):
 
 # --- Main block for direct execution (Testing/Compilation) ---
 if __name__ == "__main__":
-    from dotenv import load_dotenv
+    from readerai.utils.dspy_config import configure_dspy
 
-    load_dotenv()
-
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise ValueError("GOOGLE_API_KEY not found. Please set it in your .env file.")
-
-    model = "gemini/gemini-2.0-flash-001"
-    llm = dspy.LM(model, api_key=api_key)
-    dspy.settings.configure(lm=llm)
-
-    print("--- DSPy configured for direct script execution ---")
+    configure_dspy()
 
     # --- Examples for testing and optimization ---
     examples = [
