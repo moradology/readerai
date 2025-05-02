@@ -1,0 +1,34 @@
+# ----------  Caddyfile  ----------
+localhost {
+
+	# Static files for the SPA
+	root * /srv
+
+	encode gzip
+
+	log {
+		output stdout
+		format console
+	}
+
+	# ─── Backend routes ────────────────────────────────
+	# Plain‑path WebSocket (e.g. wss://localhost/ws)
+	reverse_proxy /ws* backend:8000
+
+	# Other explicit API endpoints
+	reverse_proxy /initial_passage_http backend:8000
+	reverse_proxy /chat_http           backend:8000
+
+	# Everything under /demo/ (including /demo/ws) → backend /
+	# `handle_path` strips the /demo prefix automatically.
+	handle_path /demo/* {
+		reverse_proxy backend:8000
+	}
+
+	# ─── Static files + SPA fallback ───────────────────
+	handle_path / {
+		try_files {path} {path}/ /index.html
+		file_server
+	}
+}
+# ----------  end ----------

@@ -59,14 +59,14 @@ const Reader: React.FC<ReaderProps> = ({ text }) => {
   return (
     <VStack spacing={6} align="stretch">
       <Box className="p-4 bg-gray-100 dark:bg-gray-700 rounded-md">
-        <Text className="text-lg leading-relaxed">
+        <Text className="text-lg leading-relaxed text-gray-800 dark:text-gray-100">
           {words.map((word, index) => (
             <Text
               as="span"
               key={index}
               className={`inline-block px-0.5 ${
                 index === currentIndex
-                  ? 'bg-blue-200 dark:bg-blue-700 text-blue-800 dark:text-blue-100 rounded'
+                  ? 'bg-blue-200 dark:bg-blue-600 text-blue-800 dark:text-blue-50 rounded'
                   : ''
               }`}
             >
@@ -104,6 +104,6 @@ const Reader: React.FC<ReaderProps> = ({ text }) => {
       )}
     </VStack>
   );
-};
+}
 
 export default Reader;

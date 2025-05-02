@@ -46,6 +46,10 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
    npm run preview
    ```
 
+### Development Features
+
+- **Dark Mode Toggle**: A button to toggle between light and dark mode is available only in development mode. This helps developers test both themes but is hidden in production.
+
 ### Code Quality Tools
 
 - **Linting**:
