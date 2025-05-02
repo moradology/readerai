@@ -29,6 +29,8 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 readerai-passages = "readerai.cli.extract_passages:main"
+readerai-vocabulary = "readerai.cli.run_vocabulary:main"
+readerai-comprehension = "readerai.cli.run_comprehension:main"
 
 [tool.mypy]
 python_version = "3.11"

@@ -15,13 +15,13 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
 
 ## ✨ Key Features
 
-- **Initial Passage & Question:** Loads a default passage and automatically generates a relevant vocabulary question on startup.
-- **Interactive Chat Interface:** Simple web UI for sending messages and receiving responses from the AI.
-- **Vocabulary Question Generation:** Identifies challenging words in the text and creates context-based questions.
-- **Usage Examples:** Provides example sentences for the identified vocabulary words.
-- **Answer Assessment:** Evaluates user-provided answers to vocabulary questions and gives feedback.
-- **DSPy Integration:** Utilizes the DSPy framework for structuring prompts and logic for interacting with LLMs (Gemini).
-- **FastAPI Backend:** Exposes the AI logic through a robust asynchronous web API.
+- **Interactive Web Interface:** FastAPI-powered UI for real-time interaction
+- **CLI Tools:** Command-line interface for batch processing and integration
+  - Passage extraction from text streams
+  - Vocabulary question generation
+  - Reading comprehension analysis
+- **Configurable LLM Integration:** Easily switch models via .env configuration
+- **Contextual Learning:** Maintains passage context for accurate assessments
 
 ## 📋 Prerequisites
 
@@ -67,11 +67,16 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
 
 4.  **Configure Environment Variables:**
 
-    - Create a `.env` file in the project root directory (`readerai/`). You can copy the structure from `.env.example` if it exists.
-    - Add your Google API key to the `.env` file:
-      ```dotenv
-      GOOGLE_API_KEY="your_actual_api_key_here"
-      ```
+- Create a `.env` file from `.env.example`:
+  ```bash
+  cp .env.example .env
+  ```
+- Configure your settings:
+  ```dotenv
+  GOOGLE_API_KEY="your_actual_api_key_here"
+  DEFAULT_LLM_MODEL="gemini/gemini-2.5-flash-preview-04-17"  # Change to preferred model
+  ```
+
 
     _(The application uses `python-dotenv` to load this automatically)_
 
@@ -101,6 +106,55 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
 - Type your answer to the question or other messages (like "hello", "vocabulary question") into the input box at the bottom.
 - Press the "Send" button or hit Enter to submit your message.
 - The AI will respond, either assessing your answer or generating a reply based on your input.
+
+## 🖥️ Command Line Tools
+
+ReaderAI provides powerful CLI utilities for batch processing:
+
+### Vocabulary Analysis
+
+```bash
+readerai-vocabulary --passage "Your text here" [--model MODEL_NAME] [--json]
+readerai-vocabulary --passage-file input.txt [--output output.json]
+```
+
+### Comprehension Analysis
+
+```bash
+readerai-comprehension --passage "Your text here" [--model MODEL_NAME]
+readerai-comprehension --passage-file input.txt [--json]
+```
+
+### Passage Extraction (Stream Processing)
+
+```bash
+cat large_file.txt | readerai-passages --output passages.jsonl
+```
+
+Key Options:
+
+- `--model`: Override default LLM (uses DEFAULT_LLM_MODEL from .env)
+- `--json`: Machine-readable output format
+- `--output`: Specify output file (defaults to stdout)
+
+## 🔧 Model Configuration
+
+Customize the LLM model via `.env`:
+
+```dotenv
+DEFAULT_LLM_MODEL="your-preferred-model"  # Supported models: gemini/gemini-2.5-flash, etc.
+```
+
+Override per-command:
+
+```bash
+readerai-vocabulary --passage "..." --model gemini/gemini-1.5-pro
+```
+
+Supported features by model:
+
+- Gemini 2.5 Flash: Best for high-volume processing
+- Gemini 1.5 Pro: Higher accuracy for complex analyses
 
 ## 🤝 Contributing
 
