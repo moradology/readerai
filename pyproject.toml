@@ -5,6 +5,7 @@ description = "AI-powered reading companion for children"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "boto3>=1.38.12",
     "dspy>=2.6.3",
     "ipdb>=0.13.13",
     "ipython>=8.32.0",
