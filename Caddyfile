@@ -31,8 +31,10 @@ localhost {
 	}
 
 	# ─── Static files + SPA fallback ───────────────────
+	handle_path /* {
 		try_files {path} {path}/ /index.html
 		file_server browse
+	}
 
 }
 # ----------  end ----------
