@@ -111,7 +111,7 @@
         // --- Configuration Constants ---
         // Make sure the protocol is ws:// (or wss:// for secure connections)
         // and the path matches the endpoint in main.py
-        const WEBSOCKET_URL = `ws://${window.location.host}/ws`; // Dynamically uses current host/port
+        const WEBSOCKET_URL = `wss://${window.location.host}/ws`; // Dynamically uses current host/port
 
         // --- DOM Element References ---
         const chatbox = document.getElementById('chatbox');

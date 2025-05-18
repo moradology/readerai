@@ -6,9 +6,16 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /
 
-COPY . .
+# only copying relevant files
+COPY main.py .
+COPY index.html .
+COPY ./readerai ./readerai/
+COPY .env ./
+COPY pyproject.toml ./
+COPY uv.lock ./
+
 
 # Install uv
 RUN pip install --no-cache-dir uv
