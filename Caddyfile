@@ -14,9 +14,7 @@ localhost {
 	@nonstatic path /ws
 
 	handle @nonstatic {
-		reverse_proxy backend:8000 {
-			stream_close_delay 5m
-		}
+		reverse_proxy backend:8000
 	}
 
 	@js path *.js
