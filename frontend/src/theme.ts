@@ -1,4 +1,7 @@
+// src/theme.ts
+
 import { extendTheme, type ThemeConfig } from '@chakra-ui/react';
+import { StyleFunctionProps } from '@chakra-ui/theme-tools';
 
 // Define the color mode config
 const config: ThemeConfig = {
@@ -10,7 +13,7 @@ const config: ThemeConfig = {
 const theme = extendTheme({
   config,
   styles: {
-    global: (props: { colorMode: string }) => ({
+    global: (props: StyleFunctionProps) => ({
       body: {
         bg: props.colorMode === 'dark' ? 'gray.900' : 'gray.50',
         color: props.colorMode === 'dark' ? 'gray.100' : 'gray.800',
@@ -20,9 +23,11 @@ const theme = extendTheme({
   colors: {
     // Custom colors for dark mode
     gray: {
-      700: '#2D3748', // Darker background for containers in dark mode
-      800: '#1A202C', // Even darker background for nested containers
-      900: '#171923', // Darkest background for page in dark mode
+      // Your existing colors
+      700: '#2D3748',
+      750: '#232B3A',
+      800: '#1A202C',
+      900: '#171923',
     },
   },
   components: {
@@ -34,7 +39,7 @@ const theme = extendTheme({
       },
     },
     Text: {
-      baseStyle: (props: { colorMode: string }) => ({
+      baseStyle: (props: StyleFunctionProps) => ({
         color: props.colorMode === 'dark' ? 'gray.100' : 'gray.800',
       }),
     },
