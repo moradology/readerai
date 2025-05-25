@@ -9,6 +9,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import (  # Added WebSocket imports
     FastAPI,
+    HTTPException,
     WebSocket,
     WebSocketDisconnect,
 )
@@ -21,6 +22,8 @@ from readerai.flows.response import (
     generate_ai_reply,
     generate_vocab_question_data,
 )
+
+from readerai.tts.polly import synthesize_speech_with_marks, PollySynthesisError
 
 # --- DSPy Configuration (Keep as before) ---
 load_dotenv()
@@ -93,9 +96,14 @@ manager = ConnectionManager()
 
 
 # Define Request and Response Models (Keep for HTTP endpoints if needed)
+
+# Pydantic Models
+class SpeechRequest(BaseModel):
+    text: str
+    voice_id: str = "Joanna" # Default voice, can be overridden by client
+
 class UserInput(BaseModel):
     message: str
-
 
 class ChatResponse(BaseModel):
     response: str
@@ -108,9 +116,32 @@ app = FastAPI(
     version="1.1.0",  # Updated version
 )
 
+# --- NEW: Amazon Polly TTS Endpoint ---
+@app.post("/api/speech")
+async def synthesize_speech(request: SpeechRequest):
+    """
+    Receives text and returns base64-encoded MP3 audio and JSON speech marks.
+    This endpoint is now a clean wrapper around our TTS logic.
+    """
+    try:
+        # Call the dedicated function to handle the synthesis logic
+        result = synthesize_speech_with_marks(
+            text=request.text, 
+            voice_id=request.voice_id
+        )
+        return JSONResponse(content=result)
+    except PollySynthesisError as e:
+        # Handle errors raised from our synthesis function
+        print(f"Caught a PollySynthesisError: {e}")
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        # Catch any other unexpected errors
+        print(f"An unexpected error occurred in the /api/speech endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected server error occurred.")
+
+
+
 # --- WebSocket Endpoint ---
-
-
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)

@@ -1,11 +1,7 @@
-// src/features/chat/components/ChatClient.tsx
-// (You might need to create these folders: src/features/chat/components)
-
 import {
   Box,
   VStack,
   Input,
-  Button,
   Text,
   Flex,
   useColorModeValue,
@@ -13,7 +9,11 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { useState, useEffect, useRef, FormEvent } from 'react';
-import { FiSend } from 'react-icons/fi'; // Using react-icons for send icon
+import { FiSend, FiVolume2, FiStopCircle } from 'react-icons/fi';
+
+// Import the hook for Polly TTS and the component for highlighting
+import { usePollySpeech } from '../hooks/usePollySpeech';
+import HighlightedMessage from './HighlightedMessage';
 
 // --- Configuration Constants ---
 const WEBSOCKET_URL = `wss://${window.location.host}/ws`;
@@ -23,7 +23,7 @@ interface ChatMessage {
   sender: 'user' | 'ai' | 'system';
   text: string;
   isError?: boolean;
-  isLoading?: boolean; // For AI "thinking..." message
+  isLoading?: boolean;
 }
 
 const ChatClient = () => {
@@ -35,7 +35,10 @@ const ChatClient = () => {
   const websocket = useRef<WebSocket | null>(null);
   const chatboxRef = useRef<HTMLDivElement | null>(null);
 
-  // Chakra UI color values
+  // --- Initialize our custom Polly speech hook ---
+  const { speak, currentlySpeakingId, highlightedWordIndex, isLoading, audioRef } = usePollySpeech();
+
+  // --- Chakra UI color values ---
   const userMessageBg = useColorModeValue('blue.500', 'blue.300');
   const userMessageColor = useColorModeValue('white', 'gray.800');
   const aiMessageBg = useColorModeValue('gray.100', 'gray.700');
@@ -46,7 +49,7 @@ const ChatClient = () => {
   const statusErrorColor = useColorModeValue('red.700', 'white');
   const statusDefaultBg = useColorModeValue('gray.200', 'gray.600');
   const statusDefaultColor = useColorModeValue('gray.600', 'gray.100');
-  const inputAreaBg = useColorModeValue('white', 'gray.750'); // Custom for dark mode
+  const inputAreaBg = useColorModeValue('white', 'gray.750');
 
   const addMessageToList = (
     sender: ChatMessage['sender'],
@@ -55,7 +58,6 @@ const ChatClient = () => {
     isLoading = false
   ) => {
     setMessages((prevMessages) => {
-      // Remove previous loading message if it exists
       const filteredMessages = prevMessages.filter(msg => !msg.isLoading);
       return [
         ...filteredMessages,
@@ -77,7 +79,6 @@ const ChatClient = () => {
             };
             return newMessages;
         }
-        // If no loading message, or last message wasn't AI loading, add new
         return [...newMessages, {id: Date.now().toString() + Math.random(), sender: 'ai', text, isError, isLoading: false}];
     });
   };
@@ -145,7 +146,6 @@ const ChatClient = () => {
         setStatus(`Disconnected: ${event.reason || 'No reason given'} (Code: ${event.code})`);
         setIsStatusError(!event.wasClean);
         setIsConnected(false);
-        // Remove any pending loading messages
         setMessages(prev => prev.filter(msg => !msg.isLoading));
       };
     };
@@ -155,7 +155,7 @@ const ChatClient = () => {
     return () => {
       websocket.current?.close();
     };
-  }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
+  }, []);
 
   useEffect(() => {
     if (chatboxRef.current) {
@@ -167,7 +167,6 @@ const ChatClient = () => {
     if (e) e.preventDefault();
     const messageText = inputValue.trim();
     if (!messageText || !websocket.current || websocket.current.readyState !== WebSocket.OPEN) {
-      console.log('Cannot send message: No text or WebSocket not open.');
       return;
     }
 
@@ -181,7 +180,6 @@ const ChatClient = () => {
         message: messageText,
       });
       websocket.current.send(messagePayload);
-      console.log('Message sent:', messagePayload);
     } catch (error) {
       console.error('Error sending message via WebSocket:', error);
       updateLastAiMessage('Error sending message. Please check connection.', true);
@@ -189,7 +187,11 @@ const ChatClient = () => {
   };
 
   return (
-    <Flex direction="column" h="calc(100vh - 200px)" /* Adjust height as needed */ maxH="700px" borderWidth="1px" borderRadius="lg" overflow="hidden">
+    <Flex direction="column" h="calc(100vh - 200px)" maxH="700px" borderWidth="1px" borderRadius="lg" overflow="hidden">
+      
+      {/* This invisible audio element is controlled by our usePollySpeech hook */}
+      <audio ref={audioRef} style={{ display: 'none' }} />
+
       <Text
         p={2}
         fontSize="sm"
@@ -205,43 +207,80 @@ const ChatClient = () => {
         overflowY="auto"
         p={4}
         spacing={3}
-        alignItems="stretch" // Make messages stretch
+        alignItems="stretch"
       >
-        {messages.map((msg) => (
-          <Flex
-            key={msg.id}
-            direction="column" // Allow sender name + message text later
-            alignSelf={msg.sender === 'user' ? 'flex-end' : 'flex-start'}
-            w="fit-content" // Shrink to content
-            maxW="70%"
-          >
-            <Box
-              bg={
-                msg.isError
-                  ? errorMessageBg
-                  : msg.sender === 'user'
-                  ? userMessageBg
-                  : aiMessageBg
-              }
-              color={
-                msg.isError
-                  ? errorMessageColor
-                  : msg.sender === 'user'
-                  ? userMessageColor
-                  : aiMessageColor
-              }
-              px={4}
-              py={2}
-              borderRadius="lg"
-              borderBottomRightRadius={msg.sender === 'user' ? '0' : undefined}
-              borderBottomLeftRadius={msg.sender === 'ai' || msg.sender === 'system' ? '0' : undefined}
-              sx={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
+        {messages.map((msg) => {
+          const isSpeakingThisMessage = currentlySpeakingId === msg.id;
+          const isSpeechLoadingForThisMessage = isLoading && isSpeakingThisMessage;
+
+          return (
+            <Flex
+              key={msg.id}
+              direction="column"
+              alignSelf={msg.sender === 'user' ? 'flex-end' : 'flex-start'}
+              w="fit-content"
+              maxW="70%"
             >
-              {msg.isLoading ? <Spinner size="xs" mr={2} /> : null}
-              {msg.isLoading ? 'AI is thinking...' : msg.text}
-            </Box>
-          </Flex>
-        ))}
+              <Box
+                position="relative"
+                bg={
+                  msg.isError
+                    ? errorMessageBg
+                    : msg.sender === 'user'
+                    ? userMessageBg
+                    : aiMessageBg
+                }
+                color={
+                  msg.isError
+                    ? errorMessageColor
+                    : msg.sender === 'user'
+                    ? userMessageColor
+                    : aiMessageColor
+                }
+                px={4}
+                py={2}
+                pr={msg.isLoading || msg.sender === 'system' ? 4 : 10} // Add padding for button
+                borderRadius="lg"
+                borderBottomRightRadius={msg.sender === 'user' ? '0' : undefined}
+                borderBottomLeftRadius={msg.sender === 'ai' || msg.sender === 'system' ? '0' : undefined}
+              >
+                
+                {/* Conditionally render message text for highlighting */}
+                {msg.isLoading ? (
+                  <Text><Spinner size="xs" mr={2} />AI is thinking...</Text>
+                ) : isSpeakingThisMessage ? (
+                  <HighlightedMessage
+                    text={msg.text}
+                    highlightedWordIndex={highlightedWordIndex}
+                  />
+                ) : (
+                  <Text sx={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+                    {msg.text}
+                  </Text>
+                )}
+                
+                {/* Show the TTS button only for user/ai messages that are not loading */}
+                {!msg.isLoading && (msg.sender === 'user' || msg.sender === 'ai') && (
+                  <IconButton
+                    aria-label={isSpeakingThisMessage ? 'Stop reading' : 'Read message aloud'}
+                    icon={isSpeakingThisMessage ? <FiStopCircle /> : <FiVolume2 />}
+                    size="xs"
+                    variant="ghost"
+                    isRound
+                    position="absolute"
+                    bottom="2px"
+                    right="2px"
+                    onClick={() => speak(msg.text, msg.id)}
+                    isLoading={isSpeechLoadingForThisMessage}
+                    isDisabled={isLoading && !isSpeechLoadingForThisMessage}
+                    color={msg.sender === 'user' ? 'whiteAlpha.700' : 'gray.500'}
+                    _hover={{ bg: msg.sender === 'user' ? 'blackAlpha.200' : 'blackAlpha.100' }}
+                  />
+                )}
+              </Box>
+            </Flex>
+          );
+        })}
       </VStack>
       <Box p={4} borderTopWidth="1px" bg={inputAreaBg}>
         <Flex as="form" onSubmit={handleSendMessage}>

@@ -11,7 +11,7 @@ localhost {
 		format console
 	}
 
-	@nonstatic path /ws
+	@nonstatic path /ws /api*
 
 	handle @nonstatic {
 		reverse_proxy backend:8000
