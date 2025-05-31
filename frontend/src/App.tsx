@@ -12,7 +12,7 @@ import {
   useColorModeValue, // <-- Import useColorModeValue
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
-import Reader from './features/reader/components/Reader';
+// import Reader from './features/reader/components/Reader';
 import ChatClient from './features/chat/components/ChatClient'; // Adjust path if needed
 
 function App() {
@@ -50,12 +50,12 @@ function App() {
       </header>
 
       <VStack spacing={8} align="stretch">
-        <Box className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        {/* <Box className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <Heading as="h2" size="lg" mb={4} color={useColorModeValue("gray.700", "gray.100")}>
             Reader Demo
           </Heading>
           <Reader text="Welcome to ReaderAI. This is a simple demo of the reader component. It highlights words as they are read aloud using the browser's built-in speech synthesis capabilities. The component will advance through each word while simultaneously reading the text aloud. You can start, pause, and reset the reading process using the controls below." />
-        </Box>
+        </Box> */}
 
         <Divider />
 
