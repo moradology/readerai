@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+. ""/bin/_/husky.sh"
+
+npm run pre-commit

@@ -1,0 +1,164 @@
+/**
+ * Tailwind CSS Entry Point
+ *
+ * Responsibilities:
+ * - Import Tailwind CSS layers
+ * - Define custom Tailwind components
+ * - Add custom utility classes
+ * - Override Tailwind defaults
+ * - Define component-specific styles
+ * - Set up responsive design helpers
+ * - Configure dark mode styles
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  /* Reading-specific components */
+  .reading-text {
+    @apply font-reading text-lg leading-relaxed tracking-wide;
+  }
+
+  .word-highlight {
+    @apply bg-reading-highlight rounded px-1 transition-colors duration-300;
+  }
+
+  .word-highlight-active {
+    @apply bg-reading-highlight-active text-gray-900;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply px-4 py-2 rounded-md font-medium transition-colors;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  .btn-primary:hover {
+    background-color: hsl(var(--primary) / 0.9);
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-md font-medium transition-colors;
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+  .btn-secondary:hover {
+    background-color: hsl(var(--secondary) / 0.8);
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 rounded-md font-medium transition-colors;
+  }
+  .btn-ghost:hover {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  /* Card styles */
+  .card {
+    @apply rounded-lg border shadow-sm;
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+  }
+
+  /* Input styles */
+  .input {
+    @apply flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: hsl(var(--input));
+    background-color: hsl(var(--background));
+    --tw-ring-offset-color: hsl(var(--background));
+    --tw-ring-color: hsl(var(--ring));
+  }
+  .input::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+}
+
+@layer utilities {
+  /* Custom animations */
+  .animate-in {
+    animation: animateIn 0.5s ease-in-out;
+  }
+
+  @keyframes animateIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Accessibility utilities */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    --tw-ring-color: hsl(var(--ring));
+  }
+
+  /* Reading mode utilities */
+  .reading-focus::selection {
+    background-color: hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary-foreground));
+  }
+}

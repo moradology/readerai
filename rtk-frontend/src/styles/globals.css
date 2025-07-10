@@ -1,0 +1,148 @@
+/**
+ * Global CSS Styles
+ *
+ * Responsibilities:
+ * - Define CSS custom properties (variables)
+ * - Set up base typography styles
+ * - Configure color schemes (light/dark)
+ * - Apply CSS resets and normalizations
+ * - Define global utility classes
+ * - Set up animation keyframes
+ * - Configure print styles
+ */
+
+/* Import Tailwind */
+@import './tailwind.css';
+
+/* CSS Reset and Base Styles */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Improved focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Remove focus styles for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Prevent layout shift from scrollbar */
+html {
+  overflow-y: scroll;
+}
+
+/* Better text selection colors */
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary-foreground));
+}
+
+/* Print styles */
+@media print {
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+  }
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Utility classes for animations */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--muted));
+}
+
+/* Ensure interactive elements are large enough for touch */
+button,
+a,
+input,
+select,
+textarea {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Exception for inline links */
+p a,
+span a {
+  min-height: unset;
+  min-width: unset;
+}

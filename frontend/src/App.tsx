@@ -1,6 +1,6 @@
 import { Box, Heading, Text, useColorMode, Button, Container } from '@chakra-ui/react';
 import { useEffect } from 'react';
-import InteractiveReader from './features/reader/components/InteractiveReader';
+import InteractiveReader from './features/reading/components/InteractiveReader';
 
 function App() {
   const { colorMode, toggleColorMode } = useColorMode();

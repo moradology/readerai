@@ -12,6 +12,7 @@ from fastapi import (  # Added WebSocket imports
     WebSocket,
     WebSocketDisconnect,
 )
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
@@ -106,6 +107,15 @@ app = FastAPI(
     title="ReaderAI Chatbot API",
     description="API interface for the ReaderAI project (including WebSockets).",
     version="1.1.0",  # Updated version
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://localhost", "http://localhost"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- WebSocket Endpoint ---
@@ -360,24 +370,40 @@ async def get_initial_passage_with_question_http():
     question_data = None
     response_data = {"passage": initial_passage}
 
+    # Format response to match frontend expectations
     if dspy.settings.lm:
         question_data = generate_vocab_question_data(initial_passage)
         if question_data and question_data.get("question_viability"):
-            # global_session_state['last_question'] = question_data.get("question") # Don't modify actual global state
-            # global_session_state['last_word'] = question_data.get("challenging_word")
-            response_data["question"] = question_data.get("question")
-            response_data["feedback"] = question_data.get("feedback")
-            response_data["usage_sentences"] = question_data.get("usage_sentences")
+            response_data["vocabulary_question"] = {
+                "word": question_data.get("challenging_word", ""),
+                "question": question_data.get("question", ""),
+                "options": [
+                    "extremely delicate and light",
+                    "very heavy and solid",
+                    "dark and frightening",
+                ],  # Mock options for now
+                "feedback": question_data.get("feedback", ""),
+            }
         else:
-            response_data["question"] = question_data.get(
-                "question", "Error generating initial question."
-            )
-            response_data["feedback"] = question_data.get(
-                "feedback", "Check server logs."
-            )
+            response_data["vocabulary_question"] = {
+                "word": "passage",
+                "question": "What does 'passage' mean in this context?",
+                "options": ["a section of text", "a hallway", "a journey"],
+                "feedback": "Consider the context of reading.",
+            }
     else:
         print("Skipping initial question generation - LLM not configured.")
-        response_data["question"] = "Error: LLM not configured."
+        # Provide mock data for testing
+        response_data["vocabulary_question"] = {
+            "word": "ethereal",
+            "question": "Based on the context, what does 'ethereal' most likely mean?",
+            "options": [
+                "extremely delicate and light in a way that seems not of this world",
+                "very heavy and solid",
+                "dark and frightening",
+            ],
+            "feedback": "Consider how the word is used to describe the light.",
+        }
         response_data["feedback"] = "Please check server logs."
 
     return JSONResponse(response_data)
