@@ -73,6 +73,7 @@ ignore = [
     "N802",    # function name should be lowercase (conflicts with some DSPy conventions)
     "N803",    # argument name should be lowercase (conflicts with some DSPy conventions)
     "N806",    # variable in function should be lowercase (conflicts with some DSPy conventions)
+    "UP007",   # Use X | Y for type annotations (DSPy requires Optional[X] syntax)
 ]
 
 [tool.ruff.lint.per-file-ignores]

@@ -1,6 +1,8 @@
 # readerai/flows/vocabulary.py
 
 
+from typing import Optional
+
 import dspy
 
 # Attempt to import TEST_PASSAGE, provide a default if constants.py doesn't exist yet
@@ -16,10 +18,10 @@ class IdentifyChallengingWord(dspy.Signature):
     """Finds a single challenging or complicated word in the passage, if any."""
 
     passage: str = dspy.InputField(description="A passage from a text.")
-    challenging_word: str | None = dspy.OutputField(
+    challenging_word: Optional[str] = dspy.OutputField(
         description="A single challenging or complicated word from the passage, if any."
     )
-    usage_sentences: str | None = dspy.OutputField(
+    usage_sentences: Optional[str] = dspy.OutputField(
         description="Two example sentences using the challenging word in context."
     )
 

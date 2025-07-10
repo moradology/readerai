@@ -1,7 +1,7 @@
 # readerai/flows/response.py
 
 # Import framework dependencies
-from typing import Any, TypeVar
+from typing import Any, Optional, TypeVar
 
 import dspy
 
@@ -77,7 +77,7 @@ except ImportError:
 
 
 # --- Helper function for generating vocab question data ---
-def generate_vocab_question_data(passage_text: str) -> dict | None:
+def generate_vocab_question_data(passage_text: str) -> Optional[dict]:
     """
     Takes a passage string and returns a dictionary with 'question',
     'feedback', 'challenging_word', and 'usage_sentences'.
@@ -118,7 +118,7 @@ def generate_vocab_question_data(passage_text: str) -> dict | None:
 # --- Function to assess student answer (uses passage passed to it) ---
 def assess_student_answer(
     passage_text: str, question_asked: str, word_asked: str, student_answer: str
-) -> dict | None:
+) -> Optional[dict]:
     """
     Assesses the student's answer using the AssessStudentAnswer signature.
     Returns a dictionary with 'is_correct' and 'assessment_feedback'.

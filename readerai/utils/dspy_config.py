@@ -3,17 +3,18 @@ DSPy Configuration Utility
 """
 
 import os
+from typing import Optional
 
 import dspy
 from dotenv import load_dotenv
 
 
-def configure_dspy(model_name: str | None = None):
+def configure_dspy(model_name: Optional[str] = None):
     """
     Configure DSPy with the specified model using the API key from environment variables.
 
     Args:
-        model_name (str | None): Optional model name override. Uses DEFAULT_LLM_MODEL from .env if not provided.
+        model_name (Optional[str]): Optional model name override. Uses DEFAULT_LLM_MODEL from .env if not provided.
     """
     load_dotenv()
     api_key = os.getenv("GOOGLE_API_KEY")
