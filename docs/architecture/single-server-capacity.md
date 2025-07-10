@@ -241,7 +241,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     async for message in websocket.iter_json():
         if message["type"] == "STUDENT_INTERRUPTION":
             # Forward to Google Cloud LLM (non-blocking)
-            asyncio.create_task(handle_question(session_id, message))
+            # In production, use a task group:
+            # tg.start_soon(handle_question, session_id, message)
 
             # Immediate acknowledgment
             await websocket.send_json({

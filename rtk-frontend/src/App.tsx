@@ -20,11 +20,13 @@ import { StateVisualizerShowcase } from './showcases/examples/StateVisualizerSho
 import { WebSocketShowcase } from './showcases/WebSocketShowcase';
 import { AudioStreamingShowcase } from './showcases/AudioStreamingShowcase';
 import { StudentInterruptionShowcase } from './showcases/StudentInterruptionShowcase';
+import { ReadingViewShowcase } from './showcases/ReadingViewShowcase';
+import { IntegratedReadingShowcase } from './showcases/IntegratedReadingShowcase';
 import { ShowcaseSection } from './showcases/components/ShowcaseContainer';
 
-type TabId = 'overview' | 'redux' | 'api' | 'providers' | 'websocket' | 'audio' | 'interruptions' | 'interactive';
+type TabId = 'overview' | 'redux' | 'api' | 'providers' | 'websocket' | 'audio' | 'interruptions' | 'reading' | 'interactive';
 
-const VALID_TABS: TabId[] = ['overview', 'redux', 'api', 'providers', 'websocket', 'audio', 'interruptions', 'interactive'];
+const VALID_TABS: TabId[] = ['overview', 'redux', 'api', 'providers', 'websocket', 'audio', 'interruptions', 'reading', 'interactive'];
 
 function getTabFromHash(): TabId {
   const hash = window.location.hash.slice(1); // Remove the #
@@ -76,7 +78,8 @@ function App(): React.JSX.Element {
               { id: 'websocket' as TabId, label: 'WebSocket' },
               { id: 'audio' as TabId, label: 'Audio Streaming' },
               { id: 'interruptions' as TabId, label: 'Student Questions' },
-              { id: 'interactive' as TabId, label: 'Interactive Demos' },
+              { id: 'reading' as TabId, label: 'Reading View' },
+              { id: 'interactive' as TabId, label: 'Complete Experience' },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -142,7 +145,10 @@ function App(): React.JSX.Element {
                   { feature: 'Demo Providers', status: 'completed' },
                   { feature: 'WebSocket Integration', status: 'completed' },
                   { feature: 'Audio Streaming Infrastructure', status: 'completed' },
-                  { feature: 'Reading UI Components', status: 'in-progress' },
+                  { feature: 'Student Interruption Flow', status: 'completed' },
+                  { feature: 'Reading View Component', status: 'completed' },
+                  { feature: 'Integrated Audio + Text', status: 'completed' },
+                  { feature: 'Reading UI Controls', status: 'in-progress' },
                 ].map(item => (
                   <div key={item.feature} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                     <span className="font-medium">{item.feature}</span>
@@ -235,10 +241,16 @@ function App(): React.JSX.Element {
           <StudentInterruptionShowcase />
         )}
 
+        {activeTab === 'reading' && (
+          <ReadingViewShowcase />
+        )}
+
         {activeTab === 'interactive' && (
           <div className="space-y-8">
+            <IntegratedReadingShowcase />
+
             <ShowcaseSection
-              title="Interactive Demos"
+              title="State Visualizer"
               description="Explore interactive examples of complex state management and UI patterns"
             >
               <StateVisualizerShowcase />
@@ -250,8 +262,8 @@ function App(): React.JSX.Element {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { title: 'Word Highlighting Demo', desc: 'Synchronized highlighting with audio playback' },
-                  { title: 'Interruption Flow', desc: 'Handle student questions during reading' },
+                  { title: 'Reading Controls', desc: 'Play/pause, speed adjustment, navigation' },
+                  { title: 'Progress Tracking', desc: 'Visual progress bars and position indicators' },
                   { title: 'Checkpoint System', desc: 'Quiz questions and progress tracking' },
                   { title: 'Audio Streaming', desc: 'Buffering and playback visualization' },
                   { title: 'Offline Mode', desc: 'Service worker and cache management' },

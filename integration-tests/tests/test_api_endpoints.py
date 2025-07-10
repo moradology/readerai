@@ -62,14 +62,21 @@ class TestAPIEndpoints:
     @pytest.mark.asyncio
     async def test_concurrent_requests(self, base_url: str, async_http_client: httpx.AsyncClient):
         """Test that the API can handle concurrent requests."""
-        import asyncio
+        import anyio
 
         async def make_health_request():
             return await async_http_client.get(f"{base_url}/health")
 
         # Make 10 concurrent requests
-        tasks = [make_health_request() for _ in range(10)]
-        responses = await asyncio.gather(*tasks)
+        responses = []
+        async with anyio.create_task_group() as tg:
+            for _ in range(10):
+
+                async def fetch_and_append():
+                    response = await make_health_request()
+                    responses.append(response)
+
+                tg.start_soon(fetch_and_append)
 
         # All should succeed
         for response in responses:
