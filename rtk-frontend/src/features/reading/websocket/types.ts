@@ -12,6 +12,9 @@ import type { WebSocketMessage } from '@providers/types';
 
 /**
  * Client -> Server Messages
+ *
+ * IMPORTANT: Each message is scoped to a single student's private session.
+ * There is NO shared state between students - they read independently.
  */
 
 // Student initiates an interruption with a question
@@ -19,12 +22,16 @@ export interface StudentInterruptionMessage extends WebSocketMessage {
   type: 'STUDENT_INTERRUPTION';
   payload: {
     questionText: string;
-    // Context to help LLM understand the question
+    // Context specific to THIS student's reading session
     context: {
       currentWordIndex: number;
       currentSentence: string;
       surroundingText: string;
       audioTimestamp: number;
+      // Session-specific context (added by backend from WebSocket connection)
+      sessionId?: string;
+      bookId?: string;
+      studentId?: string;
     };
     // Optional metadata
     interruptionType?: 'voice' | 'button' | 'gesture';
