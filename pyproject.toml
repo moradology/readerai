@@ -3,22 +3,15 @@ name = "readerai"
 version = "0.1.0"
 description = "AI-powered reading companion for children"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
-    "dspy>=2.6.3",
-    "fastapi>=0.115.8",
-    "ipdb>=0.13.13",
-    "ipython>=8.32.0",
-    "pre-commit>=4.2.0",
-    "pydantic>=2.10.6",
-    "pytest>=8.3.5",
-    "python-dotenv>=1.0.1",
-    "uvicorn[standard]>=0.29.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    # Development-only dependencies - covered by lock file when installed with uv add
+    "dspy>=2.6.27",
+    "fastapi>=0.116.0",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.1",
+    "pytest>=8.4.1",
+    "python-dotenv>=1.1.1",
+    "uvicorn[standard]>=0.35.0",
 ]
 
 [tool.setuptools]
@@ -28,13 +21,21 @@ packages = ["readerai"]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+[dependency-groups]
+dev = [
+    "ipdb>=0.13.13",
+    "ipython>=9.4.0",
+    "pytest>=8.4.1",
+    "pre-commit>=4.2.0",
+]
+
 [project.scripts]
 readerai-passages = "readerai.cli.extract_passages:main"
 readerai-vocabulary = "readerai.cli.run_vocabulary:main"
 readerai-comprehension = "readerai.cli.run_comprehension:main"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 warn_return_any = false  # Initially less strict with 'any' usage
 warn_unused_configs = true
 disallow_untyped_defs = false  # Start with less strict typing

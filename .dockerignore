@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+.tox
+.venv
+env/
+venv/
+
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/.cache
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+Dockerfile
+.dockerignore
+
+# Documentation
+ai_docs/
+experiments/
+*.md
+
+# Misc
+.env.example
+scripts/

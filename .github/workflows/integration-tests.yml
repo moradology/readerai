@@ -1,0 +1,65 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file
+        run: |
+          echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" > .env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+          echo 'DEFAULT_LLM_MODEL="gemini/gemini-2.5-flash-preview-04-17"' >> .env
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Start services
+        run: |
+          docker compose up -d --build
+
+      - name: Wait for services to be healthy
+        run: |
+          max_tries=30
+          count=0
+          until curl -k -f https://localhost/health > /dev/null 2>&1; do
+            count=$((count + 1))
+            if [ $count -ge $max_tries ]; then
+              echo "Services failed to become healthy"
+              docker compose logs
+              exit 1
+            fi
+            echo "Waiting for services... ($count/$max_tries)"
+            sleep 2
+          done
+          echo "Services are healthy!"
+
+      - name: Run integration tests
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.test.yml \
+            run --rm tests
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          docker compose logs
+
+      - name: Clean up
+        if: always()
+        run: |
+          docker compose down -v

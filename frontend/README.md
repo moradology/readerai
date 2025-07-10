@@ -136,19 +136,16 @@ function MyComponent() {
 ## Development Workflow Best Practices
 
 1. **Component Development**:
-
    - Create components in the appropriate feature directory
    - Use Chakra UI for component base and Tailwind for custom styling
    - Follow atomic design principles where possible
 
 2. **State Management**:
-
    - Use React Query for server state
    - Use React Context for global UI state
    - Use component state for local UI state
 
 3. **TypeScript**:
-
    - Define interfaces for all props
    - Use type inference where appropriate
    - Avoid `any` types

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Development build and run script
+# Uses docker-compose.override.yml for hot reloading
 # Exit immediately if a command exits with a non-zero status.
 set -e
 

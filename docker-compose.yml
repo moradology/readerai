@@ -1,4 +1,5 @@
-version: "3.8"
+networks: # Define the user-defined network
+  readerai_net:
 
 services:
   backend:
@@ -11,6 +12,8 @@ services:
     expose:
       - "8000"
     restart: unless-stopped
+    networks: # Assign backend service to the network
+      - readerai_net
 
   caddy:
     image: caddy:latest
@@ -19,13 +22,15 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./frontend/dist:/srv
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
       - backend
     restart: unless-stopped
+    networks: # Assign caddy service to the network
+      - readerai_net
 
 volumes:
   caddy_data:

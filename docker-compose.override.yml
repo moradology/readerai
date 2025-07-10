@@ -1,0 +1,41 @@
+# Development overrides - automatically merged with docker-compose.yml
+# To disable: use docker compose --no-override
+
+services:
+  backend:
+    volumes:
+      # Mount only source code for hot reload, not dependencies
+      - ./readerai:/app/readerai:ro
+      - ./main.py:/app/main.py:ro
+      - ./tests:/app/tests:ro
+      - ./.env:/app/.env:ro
+    command:
+      [
+        "uv",
+        "run",
+        "uvicorn",
+        "main:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+      ]
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+
+  caddy:
+    volumes:
+      # Keep existing Caddy volumes
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    # Add request/response logging for development
+    environment:
+      - CADDY_LOG_LEVEL=DEBUG
+
+volumes:
+  caddy_data:
+  caddy_config:

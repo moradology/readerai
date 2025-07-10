@@ -1,34 +1,44 @@
-# ----------  Caddyfile  ----------
 localhost {
-
-	# Static files for the SPA
-	root * /srv
-
+	tls internal
 	encode gzip
-
 	log {
 		output stdout
 		format console
 	}
 
-	# ─── Backend routes ────────────────────────────────
-	# Plain‑path WebSocket (e.g. wss://localhost/ws)
-	reverse_proxy /ws* backend:8000
+	# WebSocket for the root application
+	# This handles wss://localhost/ws and proxies to backend:8000/ws
+	handle /ws* {
+		reverse_proxy backend:8000
+	}
 
-	# Other explicit API endpoints
-	reverse_proxy /initial_passage_http backend:8000
-	reverse_proxy /chat_http           backend:8000
+	# Other explicit API endpoints for the root application
+	handle /initial_passage_http {
+		reverse_proxy backend:8000
+	}
+	handle /chat_http {
+		reverse_proxy backend:8000
+	}
+	handle /health {
+		reverse_proxy backend:8000
+	}
+	handle /chat {
+		reverse_proxy backend:8000
+	}
 
 	# Everything under /demo/ (including /demo/ws) → backend /
-	# `handle_path` strips the /demo prefix automatically.
+	# `handle_path` strips the /demo prefix.
+	# e.g., /demo/ws proxies to backend:8000/ws
+	# e.g., /demo/foo proxies to backend:8000/foo
 	handle_path /demo/* {
 		reverse_proxy backend:8000
 	}
 
-	# ─── Static files + SPA fallback ───────────────────
-	handle_path / {
+	# Static files + SPA fallback for the root application
+	# This is the default handler for requests not caught by the handle_path directives above.
+	handle {
+		root * /srv
 		try_files {path} {path}/ /index.html
 		file_server
 	}
 }
-# ----------  end ----------

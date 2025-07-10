@@ -23,10 +23,20 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
 - **Configurable LLM Integration:** Easily switch models via .env configuration
 - **Contextual Learning:** Maintains passage context for accurate assessments
 
+## 🛠️ Tech Stack
+
+- **Backend**: Python 3.13, FastAPI, DSPy (LLM framework)
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Chakra UI
+- **Infrastructure**: Docker, Caddy (reverse proxy with automatic HTTPS)
+- **Testing**: Pytest, Jest, Integration tests with httpx
+- **Development**: uv (package management), pre-commit hooks, hot reload support
+
 ## 📋 Prerequisites
 
-- **Python:** Version 3.11 or higher recommended.
-- **`uv`:** A fast Python package installer and resolver. If you don't have it, install via `pip install uv`.
+- **Python:** Version 3.13 or higher required.
+- **Node.js:** Version 18+ for frontend development.
+- **Docker & Docker Compose:** For containerized deployment (optional).
+- **`uv`:** A fast Python package installer and resolver. Install via: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **Git:** For cloning the repository.
 - **Google Cloud API Key:** A valid API key with the Gemini API enabled. See [Google AI documentation](https://ai.google.dev/) for setup instructions.
 
@@ -39,30 +49,31 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
     cd readerai
     ```
 
-2.  **Create and Activate Virtual Environment:**
-    Using `uv` (recommended):
+2.  **Set Python Version and Install Dependencies:**
 
     ```bash
-    # Create a virtual environment named .venv
-    uv venv .venv
-    # Activate it
-    # Linux/macOS/WSL:
-    source .venv/bin/activate
-    # Windows (Command Prompt/PowerShell):
-    # .venv\Scripts\activate
+    # Ensure Python 3.13 is used
+    uv python pin 3.13
+
+    # Install all dependencies (creates venv automatically)
+    uv sync
     ```
 
-3.  **Install Dependencies:**
-    Using `uv` (syncs with lock file):
+3.  **Install Development Dependencies (optional):**
 
     ```bash
-    uv sync
+    # Install dev tools like ipython and pre-commit
+    uv sync --group dev
     ```
 
     To add a new dependency:
 
     ```bash
+    # Add to main dependencies
     uv add <package-name>
+
+    # Add to dev dependencies
+    uv add --group dev <package-name>
     ```
 
 4.  **Configure Environment Variables:**
@@ -72,33 +83,126 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
   cp .env.example .env
   ```
 - Configure your settings:
+
   ```dotenv
   GOOGLE_API_KEY="your_actual_api_key_here"
   DEFAULT_LLM_MODEL="gemini/gemini-2.5-flash-preview-04-17"  # Change to preferred model
   ```
 
-
-    _(The application uses `python-dotenv` to load this automatically)_
+  _(The application uses `python-dotenv` to load this automatically)_
 
 ## ▶️ Running the Application
 
-1.  **Ensure Virtual Environment is Active:** Your terminal prompt should show `(.venv)` at the beginning.
+### Local Development (without Docker)
 
-2.  **Start the FastAPI Server:**
-    From the project root directory (`readerai/`), run:
+1.  **Start the FastAPI Server:**
 
     ```bash
-    uvicorn main:app --reload
+    uv run uvicorn main:app --reload
     ```
 
-    - `uvicorn`: The ASGI server running the application.
-    - `main`: The Python file (`main.py`).
-    - `app`: The FastAPI application instance created in `main.py`.
-    - `--reload`: Automatically restarts the server when code changes are detected (useful for development).
+2.  **In a separate terminal, start the frontend:**
+
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
 
 3.  **Access the Application:**
-    Open your web browser and navigate to: `http://127.0.0.1:8000/`
-    To view related docs on fastapi ends see: `http://127.0.0.1:8000/docs`
+    - Frontend: `http://localhost:5173`
+    - Backend API: `http://localhost:8000`
+    - API Documentation: `http://localhost:8000/docs`
+
+## 🐳 Docker Deployment
+
+ReaderAI includes a complete Docker setup for easy deployment with HTTPS support:
+
+### Quick Start
+
+```bash
+# First time setup
+cp .env.example .env
+# Edit .env with your API keys
+
+# Development mode (with hot reload)
+./scripts/build_and_run.sh
+
+# Production mode (optimized, no mounts)
+./scripts/build_and_run_prod.sh
+```
+
+Access the application at:
+
+- HTTP: `http://localhost` (redirects to HTTPS)
+- HTTPS: `https://localhost` (self-signed certificate)
+
+### Understanding Docker Compose Overrides
+
+The project uses Docker Compose with an override pattern:
+
+- `docker-compose.yml` - Base configuration for production
+- `docker-compose.override.yml` - Development overrides (auto-loaded)
+
+**Key differences:**
+
+- Development: Mounts source code, enables hot reload, adds debug logging
+- Production: No mounts, optimized builds, minimal logging
+
+### Manual Docker Commands
+
+```bash
+# Development (default - uses override file automatically)
+docker compose up --build
+
+# Production (explicitly skip override file)
+docker compose --no-override up --build
+
+# Run in background
+docker compose up -d
+
+# View logs
+docker compose logs -f [service_name]
+
+# Stop services
+docker compose down
+
+# Stop and remove volumes (clean slate)
+docker compose down -v
+```
+
+### Architecture
+
+- **Backend**: FastAPI application running on port 8000 (internal)
+- **Caddy**: Reverse proxy providing:
+  - HTTPS/TLS termination with automatic certificates
+  - Static file serving for the React frontend
+  - WebSocket support for real-time features
+  - API request proxying to backend
+- **Network**: User-defined bridge network for service communication
+
+### Configuration
+
+The Docker setup uses:
+
+- `Dockerfile`: Multi-stage build with proper uv installation
+- `docker-compose.yml`: Base service orchestration (production)
+- `docker-compose.override.yml`: Development overrides (auto-loaded)
+- `Caddyfile`: Reverse proxy configuration with routing rules
+
+Environment variables are loaded from `.env` file automatically.
+
+**Development Mode**:
+
+- Mounts only source code for hot reloading
+- Enables `--reload` flag on uvicorn
+- Preserves container's dependency environment
+
+**Production Mode**:
+
+- No volume mounts (full isolation)
+- Optimized for performance
+- Uses `npm ci` for reproducible builds
 
 ## 🖱️ Usage
 
@@ -139,10 +243,16 @@ Key Options:
 
 ## 🔧 Model Configuration
 
-Customize the LLM model via `.env`:
+ReaderAI uses Google's Gemini models via DSPy. Configure in `.env`:
 
 ```dotenv
-DEFAULT_LLM_MODEL="your-preferred-model"  # Supported models: gemini/gemini-2.5-flash, etc.
+GOOGLE_API_KEY="your-api-key-here"
+DEFAULT_LLM_MODEL="gemini/gemini-2.0-flash-001"  # Latest and fastest
+
+# Other supported models:
+# gemini/gemini-1.5-pro         # More accurate, slower
+# gemini/gemini-2.5-flash       # Good balance
+# gemini/gemini-1.5-flash       # Legacy, still supported
 ```
 
 Override per-command:
@@ -151,10 +261,11 @@ Override per-command:
 readerai-vocabulary --passage "..." --model gemini/gemini-1.5-pro
 ```
 
-Supported features by model:
+Model recommendations:
 
-- Gemini 2.5 Flash: Best for high-volume processing
-- Gemini 1.5 Pro: Higher accuracy for complex analyses
+- **Development/Testing**: `gemini-2.0-flash-001` (fast, cost-effective)
+- **Production**: `gemini-1.5-pro` (highest quality)
+- **High Volume**: `gemini-2.5-flash` (good balance)
 
 ## 🤝 Contributing
 
@@ -172,22 +283,119 @@ Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide to learn about:
 
 #### Pre-commit Hooks
 
-We use pre-commit hooks to maintain code quality and consistency. To set up pre-commit:
+We use pre-commit hooks to maintain code quality:
 
-1. Install the pre-commit tool:
+```bash
+# Install pre-commit (included in dev dependencies)
+uv sync --group dev
 
-   ```bash
-   uv pip install pre-commit
-   ```
+# Set up git hooks
+uv run pre-commit install
 
-2. Install the git hooks:
+# Run manually on all files
+uv run pre-commit run --all-files
+```
 
-   ```bash
-   pre-commit install
-   ```
+#### Running Tests
 
-3. Now hooks will run automatically on commit
+```bash
+# Run unit tests
+uv run pytest tests/
 
-Pre-commit will automatically check code formatting, import sorting, type hints, and linting issues before each commit. See [.pre-commit-config.yaml](.pre-commit-config.yaml) for the complete list of checks.
+# Run with coverage
+uv run pytest --cov=readerai tests/
 
-This project uses a unique specification-first approach with detailed architectural decision records and implementation prompts that guide development.
+# Run integration tests (requires Docker services running)
+cd integration-tests
+./run_tests.sh
+```
+
+#### Useful Commands
+
+```bash
+# Format code
+uv run black readerai/
+
+# Type checking
+uv run mypy readerai/
+
+# Update all dependencies
+uv lock --upgrade
+```
+
+## 🧪 Testing
+
+ReaderAI includes comprehensive testing:
+
+- **Unit Tests**: Test individual components in isolation
+- **Integration Tests**: Test the full stack (Frontend → Caddy → Backend)
+- **E2E Tests**: Test complete user workflows
+
+See [integration-tests/README.md](integration-tests/README.md) for details on running integration tests.
+
+## 🚀 Deployment
+
+For production deployment:
+
+1. Set proper environment variables in `.env`
+2. Use the production Docker script: `./scripts/build_and_run_prod.sh`
+3. Configure your domain in `Caddyfile` for automatic HTTPS
+4. Consider using a reverse proxy or load balancer for scaling
+
+## 📚 Project Structure
+
+```
+readerai/
+├── readerai/          # Core Python package
+│   ├── flows/         # LLM interaction flows
+│   ├── utils/         # Utility functions
+│   └── cli/           # Command-line tools
+├── frontend/          # React TypeScript frontend
+├── tests/             # Unit tests
+├── integration-tests/ # Full-stack integration tests
+├── scripts/           # Build and deployment scripts
+├── docker-compose.yml # Production Docker config
+├── docker-compose.override.yml # Development overrides
+└── Caddyfile         # Reverse proxy configuration
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Python version mismatch:**
+
+```bash
+# If you see "incompatible with project's Python requirement"
+uv python pin 3.13
+uv sync
+```
+
+**Docker build fails:**
+
+```bash
+# Clean rebuild
+docker compose down -v
+docker system prune -f
+./scripts/build_and_run.sh
+```
+
+**Port already in use:**
+
+```bash
+# Find process using port 80
+sudo lsof -i :80
+# Or change ports in docker-compose.yml
+```
+
+**SSL certificate warnings:**
+
+- The local Caddy server uses self-signed certificates
+- Your browser will show a security warning - this is normal for local development
+- Click "Advanced" and "Proceed to localhost" to continue
+
+**Hot reload not working:**
+
+- Ensure you're using the development script (`build_and_run.sh`)
+- Check that `docker-compose.override.yml` exists
+- Verify volume mounts in `docker compose ps`
