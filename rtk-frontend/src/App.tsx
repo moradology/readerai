@@ -19,11 +19,12 @@ import { ProviderDemo } from '@features/reading/components/ProviderDemo';
 import { StateVisualizerShowcase } from './showcases/examples/StateVisualizerShowcase';
 import { WebSocketShowcase } from './showcases/WebSocketShowcase';
 import { AudioStreamingShowcase } from './showcases/AudioStreamingShowcase';
+import { StudentInterruptionShowcase } from './showcases/StudentInterruptionShowcase';
 import { ShowcaseSection } from './showcases/components/ShowcaseContainer';
 
-type TabId = 'overview' | 'redux' | 'api' | 'providers' | 'websocket' | 'audio' | 'interactive';
+type TabId = 'overview' | 'redux' | 'api' | 'providers' | 'websocket' | 'audio' | 'interruptions' | 'interactive';
 
-const VALID_TABS: TabId[] = ['overview', 'redux', 'api', 'providers', 'websocket', 'audio', 'interactive'];
+const VALID_TABS: TabId[] = ['overview', 'redux', 'api', 'providers', 'websocket', 'audio', 'interruptions', 'interactive'];
 
 function getTabFromHash(): TabId {
   const hash = window.location.hash.slice(1); // Remove the #
@@ -74,6 +75,7 @@ function App(): React.JSX.Element {
               { id: 'providers' as TabId, label: 'Provider System' },
               { id: 'websocket' as TabId, label: 'WebSocket' },
               { id: 'audio' as TabId, label: 'Audio Streaming' },
+              { id: 'interruptions' as TabId, label: 'Student Questions' },
               { id: 'interactive' as TabId, label: 'Interactive Demos' },
             ].map(tab => (
               <button
@@ -227,6 +229,10 @@ function App(): React.JSX.Element {
 
         {activeTab === 'audio' && (
           <AudioStreamingShowcase />
+        )}
+
+        {activeTab === 'interruptions' && (
+          <StudentInterruptionShowcase />
         )}
 
         {activeTab === 'interactive' && (
