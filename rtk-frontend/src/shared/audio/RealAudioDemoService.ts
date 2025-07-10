@@ -21,6 +21,11 @@ export class RealAudioDemoService implements IAudioStreamingService {
   private audioUrl = '/demo_transcription/a.wav'; // Demo WAV file
   private audioFormat: 'mp3' | 'wav' = 'wav';
 
+  // Getter for metadata
+  get currentMetadata(): AudioStreamMetadata | null {
+    return this.metadata;
+  }
+
   // Event handlers
   private chunkReadyHandlers = new Set<(chunk: AudioChunk) => void>();
   private bufferStateHandlers = new Set<(state: AudioBufferState) => void>();

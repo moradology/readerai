@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShowcaseContainer, ShowcaseSection } from './components/ShowcaseContainer';
 import { ReadingView } from '@features/reading/components/ReadingView';
+import { ReadingControls } from '@features/reading/components/ReadingControls';
 import { RealAudioDemoService } from '@shared/audio/RealAudioDemoService';
 import { SimpleStreamingAudioPlayer } from '@providers/audio/SimpleStreamingAudioPlayer';
 import { loadDemoWordTimings } from '@shared/audio/convertTimings';
@@ -50,6 +51,9 @@ export function IntegratedReadingShowcase(): React.JSX.Element {
 
         // Load transcript
         const transcriptResponse = await fetch('/demo_transcription/transcript.txt');
+        if (!transcriptResponse.ok) {
+          throw new Error(`Failed to load transcript: ${transcriptResponse.status} ${transcriptResponse.statusText}`);
+        }
         const transcriptText = await transcriptResponse.text();
         setTranscript(transcriptText.trim());
 
@@ -57,10 +61,24 @@ export function IntegratedReadingShowcase(): React.JSX.Element {
         const timings = await loadDemoWordTimings();
         setWordTimings(timings);
 
+        // Get metadata to know duration (but don't start playing yet)
+        console.log('[IntegratedReading] Getting stream metadata...');
+        const metadata = await streamingService.current.startStream('demo');
+        if (metadata) {
+          setDuration(metadata.totalDuration);
+          console.log('[IntegratedReading] Duration set to:', metadata.totalDuration);
+        }
+
         setIsLoading(false);
+        console.log('[IntegratedReading] Initialization complete:', {
+          transcriptLength: transcriptText.length,
+          wordTimingsCount: timings.length,
+          duration: metadata?.totalDuration || 0,
+        });
       } catch (err) {
         console.error('[IntegratedReading] Initialization error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to initialize');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to initialize';
+        setError(`Initialization failed: ${errorMessage}`);
         setIsLoading(false);
       }
     };
@@ -157,20 +175,30 @@ export function IntegratedReadingShowcase(): React.JSX.Element {
       setError(null);
       setIsBuffering(true);
 
-      // Start the stream - this returns metadata
-      const metadata = await streamingService.current.startStream('demo');
+      // Check if we already have metadata (from initialization)
+      let metadata = streamingService.current.currentMetadata;
+
+      if (!metadata) {
+        // Start the stream - this returns metadata
+        console.log('[IntegratedReading] Starting new stream...');
+        metadata = await streamingService.current.startStream('demo');
+      } else {
+        console.log('[IntegratedReading] Using existing metadata');
+      }
 
       if (!metadata) {
         throw new Error('No metadata available');
       }
 
       // Load all chunks into the player
+      console.log('[IntegratedReading] Loading stream into player...');
       await audioPlayer.current.loadStream(streamingService.current, metadata);
 
       setDuration(metadata.totalDuration);
       setIsBuffering(false);
 
       // Start playback
+      console.log('[IntegratedReading] Starting playback...');
       await audioPlayer.current.playWhenReady();
       setIsPlaying(true);
 
@@ -184,17 +212,28 @@ export function IntegratedReadingShowcase(): React.JSX.Element {
 
   // Playback controls
   const togglePlayPause = async () => {
-    if (!audioPlayer.current) return;
+    if (!audioPlayer.current) {
+      console.error('[IntegratedReading] Audio player not initialized');
+      return;
+    }
 
     try {
+      console.log('[IntegratedReading] Toggle play/pause:', {
+        isPlaying,
+        currentTime,
+        isLoaded: audioPlayer.current.isLoaded(),
+      });
+
       if (isPlaying) {
         audioPlayer.current.pause();
         setIsPlaying(false);
       } else {
-        if (currentTime === 0 && !audioPlayer.current.isLoaded()) {
-          // Start streaming if at beginning and not loaded
+        if (!audioPlayer.current.isLoaded()) {
+          // Need to load the audio stream first
+          console.log('[IntegratedReading] Audio not loaded, starting stream...');
           await startStreaming();
         } else {
+          console.log('[IntegratedReading] Playing existing audio...');
           await audioPlayer.current.play();
           setIsPlaying(true);
         }
@@ -279,75 +318,23 @@ export function IntegratedReadingShowcase(): React.JSX.Element {
         title="Audio Controls"
         description="Control audio playback and streaming"
       >
-        <div className="space-y-4">
-          {/* Main controls */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={togglePlayPause}
-              disabled={isBuffering}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                isBuffering
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
-              }`}
-            >
-              {isBuffering ? 'Buffering...' : isPlaying ? 'Pause' : 'Play'}
-            </button>
-
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">
-                  {formatTime(currentTime)}
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={duration || 100}
-                  value={currentTime}
-                  onChange={(e) => handleSeek(Number(e.target.value))}
-                  className="flex-1"
-                  disabled={!duration}
-                />
-                <span className="text-sm text-gray-600">
-                  {formatTime(duration)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Playback rate and volume */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Speed: {playbackRate}x
-              </label>
-              <input
-                type="range"
-                min={0.5}
-                max={2}
-                step={0.25}
-                value={playbackRate}
-                onChange={(e) => handlePlaybackRateChange(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Volume: {Math.round(volume * 100)}%
-              </label>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.1}
-                value={volume}
-                onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-          </div>
-        </div>
+        <ReadingControls
+          isPlaying={isPlaying}
+          isLoading={isLoading}
+          isBuffering={isBuffering}
+          currentTime={currentTime}
+          duration={duration}
+          playbackRate={playbackRate}
+          volume={volume}
+          onPlayPause={togglePlayPause}
+          onSeek={handleSeek}
+          onPlaybackRateChange={handlePlaybackRateChange}
+          onVolumeChange={handleVolumeChange}
+          onRestart={() => {
+            handleSeek(0);
+            setIsPlaying(false);
+          }}
+        />
       </ShowcaseSection>
 
       {/* Reading View */}
@@ -381,10 +368,4 @@ export function IntegratedReadingShowcase(): React.JSX.Element {
       </ShowcaseSection>
     </ShowcaseContainer>
   );
-}
-
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }

@@ -21,12 +21,13 @@ import { WebSocketShowcase } from './showcases/WebSocketShowcase';
 import { AudioStreamingShowcase } from './showcases/AudioStreamingShowcase';
 import { StudentInterruptionShowcase } from './showcases/StudentInterruptionShowcase';
 import { ReadingViewShowcase } from './showcases/ReadingViewShowcase';
+import { ReadingControlsShowcase } from './showcases/ReadingControlsShowcase';
 import { IntegratedReadingShowcase } from './showcases/IntegratedReadingShowcase';
 import { ShowcaseSection } from './showcases/components/ShowcaseContainer';
 
-type TabId = 'overview' | 'redux' | 'api' | 'providers' | 'websocket' | 'audio' | 'interruptions' | 'reading' | 'interactive';
+type TabId = 'overview' | 'redux' | 'api' | 'providers' | 'websocket' | 'audio' | 'interruptions' | 'reading' | 'controls' | 'interactive';
 
-const VALID_TABS: TabId[] = ['overview', 'redux', 'api', 'providers', 'websocket', 'audio', 'interruptions', 'reading', 'interactive'];
+const VALID_TABS: TabId[] = ['overview', 'redux', 'api', 'providers', 'websocket', 'audio', 'interruptions', 'reading', 'controls', 'interactive'];
 
 function getTabFromHash(): TabId {
   const hash = window.location.hash.slice(1); // Remove the #
@@ -79,6 +80,7 @@ function App(): React.JSX.Element {
               { id: 'audio' as TabId, label: 'Audio Streaming' },
               { id: 'interruptions' as TabId, label: 'Student Questions' },
               { id: 'reading' as TabId, label: 'Reading View' },
+              { id: 'controls' as TabId, label: 'Reading Controls' },
               { id: 'interactive' as TabId, label: 'Complete Experience' },
             ].map(tab => (
               <button
@@ -148,7 +150,7 @@ function App(): React.JSX.Element {
                   { feature: 'Student Interruption Flow', status: 'completed' },
                   { feature: 'Reading View Component', status: 'completed' },
                   { feature: 'Integrated Audio + Text', status: 'completed' },
-                  { feature: 'Reading UI Controls', status: 'in-progress' },
+                  { feature: 'Reading UI Controls', status: 'completed' },
                 ].map(item => (
                   <div key={item.feature} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                     <span className="font-medium">{item.feature}</span>
@@ -245,6 +247,10 @@ function App(): React.JSX.Element {
           <ReadingViewShowcase />
         )}
 
+        {activeTab === 'controls' && (
+          <ReadingControlsShowcase />
+        )}
+
         {activeTab === 'interactive' && (
           <div className="space-y-8">
             <IntegratedReadingShowcase />
@@ -262,7 +268,6 @@ function App(): React.JSX.Element {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { title: 'Reading Controls', desc: 'Play/pause, speed adjustment, navigation' },
                   { title: 'Progress Tracking', desc: 'Visual progress bars and position indicators' },
                   { title: 'Checkpoint System', desc: 'Quiz questions and progress tracking' },
                   { title: 'Audio Streaming', desc: 'Buffering and playback visualization' },

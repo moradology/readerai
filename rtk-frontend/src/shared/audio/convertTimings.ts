@@ -44,11 +44,13 @@ export function convertAlignmentToWordTimings(alignmentData: { words: AlignmentW
 export async function loadDemoWordTimings(): Promise<WordTiming[]> {
   try {
     const response = await fetch('/demo_transcription/align.json');
+    if (!response.ok) {
+      throw new Error(`Failed to load align.json: ${response.status} ${response.statusText}`);
+    }
     const alignmentData = await response.json();
     return convertAlignmentToWordTimings(alignmentData);
   } catch (error) {
     console.error('[convertTimings] Failed to load demo timings:', error);
-    // Return empty array as fallback
-    return [];
+    throw error; // Re-throw to allow proper error handling
   }
 }
