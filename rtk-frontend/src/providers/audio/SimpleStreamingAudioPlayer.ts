@@ -158,6 +158,7 @@ export class SimpleStreamingAudioPlayer implements AudioPlayerProvider, Streamin
 
       // For demo, load all chunks and create a blob
       // In production, would use MediaSource for true streaming
+      // eslint-disable-next-line no-console
       console.log('[SimpleStreamingPlayer] Loading all chunks for demo...', {
         totalChunks: metadata?.totalChunks,
         duration: metadata?.totalDuration,
@@ -199,6 +200,7 @@ export class SimpleStreamingAudioPlayer implements AudioPlayerProvider, Streamin
       this.isLoading = false;
       this.notifyLoadComplete();
 
+      // eslint-disable-next-line no-console
       console.log('[SimpleStreamingPlayer] Audio loaded and ready');
     } catch (error) {
       this.isLoading = false;
@@ -211,12 +213,12 @@ export class SimpleStreamingAudioPlayer implements AudioPlayerProvider, Streamin
     // Wait for audio to be ready before playing
     if (this.audio.readyState < 2) {
       await new Promise<void>((resolve, reject) => {
-        const handleCanPlay = () => {
+        const handleCanPlay = (): void => {
           this.audio.removeEventListener('canplay', handleCanPlay);
           this.audio.removeEventListener('error', handleError);
           resolve();
         };
-        const handleError = () => {
+        const handleError = (): void => {
           this.audio.removeEventListener('canplay', handleCanPlay);
           this.audio.removeEventListener('error', handleError);
           reject(new Error('Failed to load audio'));

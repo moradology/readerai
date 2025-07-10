@@ -6,8 +6,8 @@
 
 export async function generateDemoAudio(): Promise<Blob> {
   // Create an audio context
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const AudioContextClass = window.AudioContext || ((window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext) as typeof AudioContext;
+  const audioContext = new AudioContextClass();
 
   // Create a buffer for 2 minutes at 44.1kHz
   const duration = 120; // seconds
@@ -52,12 +52,12 @@ function bufferToWav(buffer: AudioBuffer): Blob {
   let pos = 0;
 
   // Write WAV header
-  const setUint16 = (data: number) => {
+  const setUint16 = (data: number): void => {
     view.setUint16(pos, data, true);
     pos += 2;
   };
 
-  const setUint32 = (data: number) => {
+  const setUint32 = (data: number): void => {
     view.setUint32(pos, data, true);
     pos += 4;
   };

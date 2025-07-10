@@ -50,6 +50,7 @@ export class DemoAudioStreamingService implements IAudioStreamingService {
 
     // Start streaming
 
+    // eslint-disable-next-line no-console
     console.log('[DemoAudioStreaming] Started stream:', url);
 
     return this.metadata;
@@ -63,10 +64,12 @@ export class DemoAudioStreamingService implements IAudioStreamingService {
   }
 
   pauseStream(): void {
+    // eslint-disable-next-line no-console
     console.log('[DemoAudioStreaming] Stream paused');
   }
 
   resumeStream(): void {
+    // eslint-disable-next-line no-console
     console.log('[DemoAudioStreaming] Stream resumed');
   }
 
@@ -148,6 +151,7 @@ export class DemoAudioStreamingService implements IAudioStreamingService {
     this.chunks.clear();
     this.loadingChunks.clear();
     this.notifyBufferStateChange();
+    // eslint-disable-next-line no-console
     console.log('[DemoAudioStreaming] Buffer cleared');
   }
 
@@ -222,6 +226,7 @@ export class DemoAudioStreamingService implements IAudioStreamingService {
       this.chunks.set(sequenceNumber, chunk);
       this.loadingChunks.delete(sequenceNumber);
 
+      // eslint-disable-next-line no-console
       console.log(`[DemoAudioStreaming] Loaded chunk ${sequenceNumber}`);
 
       this.notifyChunkReady(chunk);
@@ -267,6 +272,7 @@ export class DemoAudioStreamingService implements IAudioStreamingService {
       try {
         handler(chunk);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error in chunk ready handler:', error);
       }
     });
@@ -278,6 +284,7 @@ export class DemoAudioStreamingService implements IAudioStreamingService {
       try {
         handler(state);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error in buffer state handler:', error);
       }
     });
@@ -288,17 +295,20 @@ export class DemoAudioStreamingService implements IAudioStreamingService {
       try {
         handler(error);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Error in error handler:', err);
       }
     });
   }
 
   private notifyStreamEnd(): void {
+    // eslint-disable-next-line no-console
     console.log('[DemoAudioStreaming] Stream ended');
     this.endHandlers.forEach(handler => {
       try {
         handler();
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error in end handler:', error);
       }
     });

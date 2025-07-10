@@ -43,9 +43,9 @@ vi.mock('../convertTimings', () => ({
 }));
 
 // Mock fetch
-global.fetch = vi.fn().mockResolvedValue({
+globalThis.fetch = vi.fn().mockResolvedValue({
   ok: true,
-  text: async () => 'Test transcript',
+  text: async (): Promise<string> => 'Test transcript',
 });
 
 describe('AudioStreamingShowcase', () => {
@@ -71,7 +71,11 @@ describe('AudioStreamingShowcase', () => {
 
   it('should initialize stream when play is clicked', async () => {
     const { RealAudioDemoService } = await import('../RealAudioDemoService');
-    const mockService = new (RealAudioDemoService as any)();
+    const MockedService = RealAudioDemoService as unknown as new () => {
+      startStream: ReturnType<typeof vi.fn>;
+      isStreamReady: ReturnType<typeof vi.fn>;
+    };
+    const mockService = new MockedService();
 
     render(<AudioStreamingShowcase />);
 

@@ -9,14 +9,14 @@
  * - Word timing synchronization
  */
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShowcaseContainer, ShowcaseSection } from './components/ShowcaseContainer';
 import { RealAudioDemoService } from '@shared/audio/RealAudioDemoService';
 import { SimpleStreamingAudioPlayer } from '@providers/audio/SimpleStreamingAudioPlayer';
 import { loadDemoWordTimings } from '@shared/audio/convertTimings';
 import type { AudioBufferState, WordTiming } from '@shared/audio/types';
 
-export function AudioStreamingShowcase() {
+export function AudioStreamingShowcase(): React.JSX.Element {
   // Demo text and word timings
   const [demoWords, setDemoWords] = useState<string[]>([]);
   const [wordTimings, setWordTimings] = useState<WordTiming[]>([]);
@@ -63,6 +63,7 @@ export function AudioStreamingShowcase() {
         setDemoWords(text.trim().split(/\s+/));
       })
       .catch(error => {
+        // eslint-disable-next-line no-console
         console.error('[AudioShowcase] Failed to load transcript:', error);
       });
 
@@ -70,14 +71,19 @@ export function AudioStreamingShowcase() {
     loadDemoWordTimings()
       .then(timings => {
         setWordTimings(timings);
+        // eslint-disable-next-line no-console
         console.log('[AudioShowcase] Loaded word timings:', timings.length);
       })
       .catch(error => {
+        // eslint-disable-next-line no-console
         console.error('[AudioShowcase] Failed to load word timings:', error);
       });
 
     // Initialize audio player
-    audioPlayer.current.initialize().catch(console.error);
+    audioPlayer.current.initialize().catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error(err);
+    });
 
     return () => {
       streamingService.current?.stopStream();
@@ -94,7 +100,7 @@ export function AudioStreamingShowcase() {
         audioPlayer.current.onTimeUpdate((time) => {
           setCurrentTime(time);
           // Update current word
-          const wordIndex = audioPlayer.current!.getCurrentWordIndex(wordTimings);
+          const wordIndex = audioPlayer.current?.getCurrentWordIndex(wordTimings) ?? -1;
           setCurrentWordIndex(wordIndex);
         })
       );
@@ -142,13 +148,14 @@ export function AudioStreamingShowcase() {
     }
   }, [simulateDelay, networkDelay]);
 
-  const handleStartStream = async () => {
+  const handleStartStream = async (): Promise<void> => {
     if (!streamingService.current || !audioPlayer.current) return;
 
     try {
       setError(null);
       setIsLoading(true);
 
+      // eslint-disable-next-line no-console
       console.log('[AudioShowcase] Starting stream...');
       const metadata = await streamingService.current.startStream('/demo_transcription/a.wav');
 
@@ -156,27 +163,32 @@ export function AudioStreamingShowcase() {
         throw new Error('Failed to get stream metadata');
       }
 
+      // eslint-disable-next-line no-console
       console.log('[AudioShowcase] Stream metadata:', metadata);
       setDuration(metadata.totalDuration);
 
+      // eslint-disable-next-line no-console
       console.log('[AudioShowcase] Loading stream into player...');
       await audioPlayer.current.loadStream(streamingService.current, metadata);
 
+      // eslint-disable-next-line no-console
       console.log('[AudioShowcase] Stream loaded successfully');
       setIsLoading(false);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('[AudioShowcase] Stream start error:', err);
       setError((err as Error).message);
       setIsLoading(false);
     }
   };
 
-  const handlePlay = async () => {
+  const handlePlay = async (): Promise<void> => {
     if (!audioPlayer.current || !streamingService.current) return;
 
     try {
       // Always ensure stream is started first
       if (!streamingService.current.isStreamReady()) {
+        // eslint-disable-next-line no-console
         console.log('[AudioShowcase] Stream not ready, starting stream before play...');
         await handleStartStream();
       }
@@ -186,6 +198,7 @@ export function AudioStreamingShowcase() {
       setError(null); // Clear any previous errors
     } catch (err) {
       const error = err as Error;
+      // eslint-disable-next-line no-console
       console.error('[AudioShowcase] Play error:', error);
       // Handle autoplay errors specifically
       if (error.name === 'AbortError') {
@@ -197,13 +210,13 @@ export function AudioStreamingShowcase() {
     }
   };
 
-  const handlePause = () => {
+  const handlePause = (): void => {
     audioPlayer.current?.pause();
     streamingService.current?.pauseStream();
     setIsPlaying(false);
   };
 
-  const handleStop = () => {
+  const handleStop = (): void => {
     audioPlayer.current?.stop();
     streamingService.current?.stopStream();
     setIsPlaying(false);
@@ -219,23 +232,26 @@ export function AudioStreamingShowcase() {
     });
   };
 
-  const handleSeek = (time: number) => {
+  const handleSeek = (time: number): void => {
     if (audioPlayer.current) {
-      audioPlayer.current.seekToTime(time).catch(console.error);
+      audioPlayer.current.seekToTime(time).catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error(err);
+      });
     }
   };
 
-  const handlePlaybackRateChange = (rate: number) => {
+  const handlePlaybackRateChange = (rate: number): void => {
     setPlaybackRate(rate);
     audioPlayer.current?.setPlaybackRate(rate);
   };
 
-  const handleVolumeChange = (vol: number) => {
+  const handleVolumeChange = (vol: number): void => {
     setVolume(vol);
     audioPlayer.current?.setVolume(vol);
   };
 
-  const getBufferHealthColor = (health: AudioBufferState['bufferHealth']) => {
+  const getBufferHealthColor = (health: AudioBufferState['bufferHealth']): string => {
     switch (health) {
       case 'empty': return 'bg-red-500';
       case 'low': return 'bg-orange-500';

@@ -11,7 +11,7 @@
  * - Initialize app-wide services
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@app/hooks';
 import { selectReadingStatus, play, pause } from '@features/reading/store/readingSlice';
 import { ApiDemo } from '@features/reading/components/ApiDemo';
@@ -30,14 +30,14 @@ function getTabFromHash(): TabId {
   return VALID_TABS.includes(hash as TabId) ? (hash as TabId) : 'overview';
 }
 
-function App() {
+function App(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<TabId>(getTabFromHash());
   const dispatch = useAppDispatch();
   const readingStatus = useAppSelector(selectReadingStatus);
 
   // Handle hash changes
   useEffect(() => {
-    const handleHashChange = () => {
+    const handleHashChange = (): void => {
       setActiveTab(getTabFromHash());
     };
 

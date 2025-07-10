@@ -41,10 +41,12 @@ export class RealAudioDemoService implements IAudioStreamingService {
     try {
       // Load the entire audio file (for demo purposes)
       // In production, we'd only load chunks as needed
+      // eslint-disable-next-line no-console
       console.log('[RealAudioDemo] Loading audio file...');
 
       // Load the WAV file from demo_transcription
       try {
+        // eslint-disable-next-line no-console
         console.log('[RealAudioDemo] Loading WAV file from:', this.audioUrl);
         const response = await fetch(this.audioUrl);
         if (!response.ok) {
@@ -53,10 +55,13 @@ export class RealAudioDemoService implements IAudioStreamingService {
 
         this.audioBuffer = await response.arrayBuffer();
         this.audioFormat = 'wav';
+        // eslint-disable-next-line no-console
         console.log('[RealAudioDemo] Successfully loaded WAV file, size:', this.audioBuffer.byteLength);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('[RealAudioDemo] Failed to load WAV file:', error);
         // Fallback to generated audio
+        // eslint-disable-next-line no-console
         console.log('[RealAudioDemo] Using generated WAV audio as fallback');
         const blob = await generateDemoAudio();
         this.audioBuffer = await blob.arrayBuffer();
@@ -106,11 +111,14 @@ export class RealAudioDemoService implements IAudioStreamingService {
             const bytesPerSample = bitsPerSample / 8;
             const totalSamples = dataSize / (bytesPerSample * channels);
             duration = totalSamples / sampleRate;
+            // eslint-disable-next-line no-console
             console.log('[RealAudioDemo] WAV duration calculated:', duration, 'seconds');
           } else {
+            // eslint-disable-next-line no-console
             console.warn('[RealAudioDemo] Invalid WAV header, using fallback duration');
           }
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('[RealAudioDemo] Error parsing WAV header:', error);
           // Keep default fallback duration
         }
@@ -136,6 +144,7 @@ export class RealAudioDemoService implements IAudioStreamingService {
         channels: this.audioFormat === 'wav' ? 1 : 2,
       };
 
+      // eslint-disable-next-line no-console
       console.log('[RealAudioDemo] Stream ready:', {
         fileSize: audioSize,
         totalChunks,
@@ -149,6 +158,7 @@ export class RealAudioDemoService implements IAudioStreamingService {
 
       return this.metadata;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[RealAudioDemo] Failed to start stream:', error);
       throw error;
     }
@@ -163,10 +173,12 @@ export class RealAudioDemoService implements IAudioStreamingService {
   }
 
   pauseStream(): void {
+    // eslint-disable-next-line no-console
     console.log('[RealAudioDemo] Stream paused');
   }
 
   resumeStream(): void {
+    // eslint-disable-next-line no-console
     console.log('[RealAudioDemo] Stream resumed');
   }
 
@@ -325,6 +337,7 @@ export class RealAudioDemoService implements IAudioStreamingService {
       this.chunks.set(sequenceNumber, chunk);
       this.loadingChunks.delete(sequenceNumber);
 
+      // eslint-disable-next-line no-console
       console.log(`[RealAudioDemo] Loaded chunk ${sequenceNumber} (${chunk.size} bytes)`);
 
       this.notifyChunkReady(chunk);
@@ -349,6 +362,7 @@ export class RealAudioDemoService implements IAudioStreamingService {
       try {
         handler(chunk);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error in chunk ready handler:', error);
       }
     });
@@ -360,6 +374,7 @@ export class RealAudioDemoService implements IAudioStreamingService {
       try {
         handler(state);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error in buffer state handler:', error);
       }
     });
@@ -370,17 +385,20 @@ export class RealAudioDemoService implements IAudioStreamingService {
       try {
         handler(error);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('Error in error handler:', err);
       }
     });
   }
 
   private notifyStreamEnd(): void {
+    // eslint-disable-next-line no-console
     console.log('[RealAudioDemo] Stream ended');
     this.endHandlers.forEach(handler => {
       try {
         handler();
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error in end handler:', error);
       }
     });

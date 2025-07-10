@@ -300,10 +300,15 @@ export class StreamingAudioPlayerProvider implements AudioPlayerProvider, Stream
     this.audio.src = URL.createObjectURL(this.mediaSource);
 
     await new Promise<void>((resolve, reject) => {
-      this.mediaSource!.addEventListener('sourceopen', () => {
+      if (!this.mediaSource) {
+        reject(new Error('MediaSource is null'));
+        return;
+      }
+      this.mediaSource.addEventListener('sourceopen', () => {
         try {
           const mimeType = this.getMimeType(metadata.format);
-          this.sourceBuffer = this.mediaSource!.addSourceBuffer(mimeType);
+          if (!this.mediaSource) throw new Error('MediaSource became null');
+          this.sourceBuffer = this.mediaSource.addSourceBuffer(mimeType);
           this.sourceBuffer.mode = 'sequence';
 
           // Set up source buffer event listeners
@@ -317,9 +322,11 @@ export class StreamingAudioPlayerProvider implements AudioPlayerProvider, Stream
         }
       }, { once: true });
 
-      this.mediaSource!.addEventListener('error', () => {
-        reject(new Error('MediaSource error'));
-      }, { once: true });
+      if (this.mediaSource) {
+        this.mediaSource.addEventListener('error', () => {
+          reject(new Error('MediaSource error'));
+        }, { once: true });
+      }
     });
   }
 
@@ -382,8 +389,10 @@ export class StreamingAudioPlayerProvider implements AudioPlayerProvider, Stream
       return;
     }
 
-    const chunk = this.pendingChunks.shift()!;
-    this.appendChunk(chunk);
+    const chunk = this.pendingChunks.shift();
+    if (chunk) {
+      this.appendChunk(chunk);
+    }
   }
 
   private setupAudioEventListeners(): void {

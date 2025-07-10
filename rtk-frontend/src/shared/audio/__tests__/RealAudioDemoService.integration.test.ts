@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RealAudioDemoService } from '../RealAudioDemoService';
 
 // Mock fetch for realistic WAV file simulation
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 // Create a valid WAV header for testing
 function createMockWavBuffer(sizeInBytes: number = 10000): ArrayBuffer {
@@ -53,9 +53,9 @@ describe('RealAudioDemoService - totalChunks error reproduction', () => {
     it('should handle race condition between startStream and getChunk', async () => {
       // Mock successful audio file fetch
       const mockBuffer = createMockWavBuffer(10000);
-      (global.fetch as any).mockResolvedValueOnce({
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        arrayBuffer: async () => mockBuffer,
+        arrayBuffer: async (): Promise<ArrayBuffer> => mockBuffer,
       });
 
       // Start stream initialization (don't await)
@@ -76,9 +76,9 @@ describe('RealAudioDemoService - totalChunks error reproduction', () => {
 
     it('should handle concurrent getChunk calls during initialization', async () => {
       const mockBuffer = createMockWavBuffer(50000);
-      (global.fetch as any).mockResolvedValueOnce({
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        arrayBuffer: async () => mockBuffer,
+        arrayBuffer: async (): Promise<ArrayBuffer> => mockBuffer,
       });
 
       // Initialize stream
@@ -101,9 +101,9 @@ describe('RealAudioDemoService - totalChunks error reproduction', () => {
 
     it('should maintain metadata consistency during chunk loading', async () => {
       const mockBuffer = createMockWavBuffer(100000);
-      (global.fetch as any).mockResolvedValueOnce({
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        arrayBuffer: async () => mockBuffer,
+        arrayBuffer: async (): Promise<ArrayBuffer> => mockBuffer,
       });
 
       const metadata = await service.startStream('/test.wav');
@@ -121,9 +121,9 @@ describe('RealAudioDemoService - totalChunks error reproduction', () => {
 
     it('should handle stopStream during active chunk loading', async () => {
       const mockBuffer = createMockWavBuffer(50000);
-      (global.fetch as any).mockResolvedValueOnce({
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        arrayBuffer: async () => mockBuffer,
+        arrayBuffer: async (): Promise<ArrayBuffer> => mockBuffer,
       });
 
       await service.startStream('/test.wav');
@@ -160,14 +160,14 @@ describe('RealAudioDemoService - totalChunks error reproduction', () => {
       // 6. Somewhere during this, getChunk is called prematurely
 
       // Simulate delayed fetch response
-      let resolveArrayBuffer: (value: ArrayBuffer) => void;
+      let resolveArrayBuffer: ((value: ArrayBuffer) => void) | undefined;
       const fetchPromise = new Promise<ArrayBuffer>(resolve => {
         resolveArrayBuffer = resolve;
       });
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        arrayBuffer: async () => fetchPromise,
+        arrayBuffer: async (): Promise<ArrayBuffer> => fetchPromise,
       });
 
       // Start stream (non-blocking)
@@ -180,7 +180,9 @@ describe('RealAudioDemoService - totalChunks error reproduction', () => {
       await expect(service.getChunk(0)).rejects.toThrow('Stream not initialized');
 
       // Now complete the fetch
-      resolveArrayBuffer!(createMockWavBuffer(10000));
+      if (resolveArrayBuffer) {
+        resolveArrayBuffer(createMockWavBuffer(10000));
+      }
 
       // Wait for initialization to complete
       await startPromise;
@@ -196,15 +198,16 @@ describe('RealAudioDemoService - totalChunks error reproduction', () => {
     it('should properly guard against null metadata in loadChunk', async () => {
       // Test that loadChunk method has proper null checks
       const mockBuffer = createMockWavBuffer(10000);
-      (global.fetch as any).mockResolvedValueOnce({
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        arrayBuffer: async () => mockBuffer,
+        arrayBuffer: async (): Promise<ArrayBuffer> => mockBuffer,
       });
 
       await service.startStream('/test.wav');
 
       // Manually clear metadata to simulate error condition
       // We'll need to use type assertion to access private property for testing
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (service as any).metadata = null;
 
       // Should throw meaningful error, not null reference
@@ -214,9 +217,9 @@ describe('RealAudioDemoService - totalChunks error reproduction', () => {
     it('should handle edge case of totalChunks being 0 or negative', async () => {
       // Create a very small buffer that might result in 0 chunks
       const mockBuffer = createMockWavBuffer(100); // Very small
-      (global.fetch as any).mockResolvedValueOnce({
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        arrayBuffer: async () => mockBuffer,
+        arrayBuffer: async (): Promise<ArrayBuffer> => mockBuffer,
       });
 
       const metadata = await service.startStream('/test.wav');
