@@ -161,13 +161,13 @@ interface SessionState {
 - Progress in one doesn't affect the other
 - Questions are contextualized to each book
 
-**Scenario 3**: Classroom of 30 students
+**Scenario 3**: Many concurrent students
 
-- 30 independent WebSocket connections
-- Some reading the same book, others different books
-- Each at their own pace
-- Teacher can monitor individually
-- No student affects another's experience
+- Hundreds or thousands of independent WebSocket connections
+- Students across different locations and time zones
+- Each reading their chosen book at their own pace
+- Teachers monitor their own students through dashboards
+- Complete isolation - no student affects another's experience
 
 ## Implementation Guidelines
 
@@ -226,11 +226,12 @@ class ReadingSessionHandler:
 
 ## Scalability Considerations
 
-### Horizontal Scaling
+### Scaling Considerations
 
-- Sessions can be distributed across servers
-- Use session ID for routing (sticky sessions)
-- No inter-session communication needed
+- Each server handles many WebSocket connections
+- Load balancer with sticky sessions (student stays on same server)
+- Session state needs to be stored somewhere (database, Redis, etc.)
+- No direct communication between student sessions
 
 ### Resource Isolation
 
