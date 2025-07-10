@@ -92,37 +92,27 @@ def generate_vocab_question_data(passage_text: str) -> dict | None:
             "question": "Error: LLM not configured.",
             "feedback": "Please check server logs.",
         }
-    try:
-        vocab_flow = VocabularyFlow()
-        prediction = vocab_flow(passage=passage_text)  # Pass the text argument
+    vocab_flow = VocabularyFlow()
+    prediction = vocab_flow(passage=passage_text)  # Pass the text argument
 
-        if not prediction.get("question_viability", False):
-            return {
-                "question": prediction.get(
-                    "question", "Could not generate viable question."
-                ),
-                "feedback": prediction.get("feedback", "Assessment failed."),
-                "challenging_word": prediction.get("challenging_word"),
-                "usage_sentences": prediction.get("usage_sentences"),
-                "question_viability": False,
-            }
-
+    if not prediction.get("question_viability", False):
         return {
-            "question": prediction.get("question", "Error: Question format invalid."),
-            "feedback": prediction.get("feedback", "Error: Feedback format invalid."),
-            "challenging_word": prediction.get("challenging_word", None),
-            "usage_sentences": prediction.get("usage_sentences", None),
-            "question_viability": True,
-        }
-    except Exception as e:
-        print(f"Error generating vocab question: {e}")
-        return {
-            "question": "Sorry, I couldn't generate a question for that passage.",
-            "feedback": f"Error details: {e}",
-            "challenging_word": None,
-            "usage_sentences": None,
+            "question": prediction.get(
+                "question", "Could not generate viable question."
+            ),
+            "feedback": prediction.get("feedback", "Assessment failed."),
+            "challenging_word": prediction.get("challenging_word"),
+            "usage_sentences": prediction.get("usage_sentences"),
             "question_viability": False,
         }
+
+    return {
+        "question": prediction.get("question", "Error: Question format invalid."),
+        "feedback": prediction.get("feedback", "Error: Feedback format invalid."),
+        "challenging_word": prediction.get("challenging_word", None),
+        "usage_sentences": prediction.get("usage_sentences", None),
+        "question_viability": True,
+    }
 
 
 # --- Function to assess student answer (uses passage passed to it) ---
@@ -140,25 +130,19 @@ def assess_student_answer(
         print("Error: DSPy LLM not configured.")
         return {"assessment_feedback": "Error: LLM not configured. Cannot assess."}
 
-    try:
-        answer_assessor = dspy.Predict(AssessStudentAnswer)
-        assessment = answer_assessor(
-            passage=passage_text,
-            question=question_asked,
-            challenging_word=word_asked,
-            student_answer=student_answer,
-        )
-        return {
-            "is_correct": assessment.get("is_correct", False),
-            "assessment_feedback": assessment.get(
-                "assessment_feedback", "Could not get assessment feedback."
-            ),
-        }
-    except Exception as e:
-        print(f"Error assessing student answer: {e}")
-        return {
-            "assessment_feedback": f"Sorry, an error occurred during assessment: {e}"
-        }
+    answer_assessor = dspy.Predict(AssessStudentAnswer)
+    assessment = answer_assessor(
+        passage=passage_text,
+        question=question_asked,
+        challenging_word=word_asked,
+        student_answer=student_answer,
+    )
+    return {
+        "is_correct": assessment.get("is_correct", False),
+        "assessment_feedback": assessment.get(
+            "assessment_feedback", "Could not get assessment feedback."
+        ),
+    }
 
 
 # --- Main function called by the /chat endpoint ---

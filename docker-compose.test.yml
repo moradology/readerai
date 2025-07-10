@@ -1,0 +1,27 @@
+# Docker Compose configuration for running integration tests
+# Usage: docker compose -f docker-compose.yml -f docker-compose.test.yml up --exit-code-from tests
+
+services:
+  # Run integration tests against the running services
+  tests:
+    build:
+      context: ./integration-tests
+      dockerfile: Dockerfile
+    container_name: readerai_integration_tests
+    environment:
+      - TEST_BASE_URL=https://caddy
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - backend
+      - caddy
+    networks:
+      - readerai_net
+    volumes:
+      - ./integration-tests:/tests:ro
+    command: ["pytest", "-v", "--tb=short", "/tests/tests"]
+
+  # Override backend for test mode (optional)
+  backend:
+    environment:
+      - TESTING=true
+      - LOG_LEVEL=DEBUG

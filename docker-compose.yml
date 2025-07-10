@@ -1,0 +1,42 @@
+networks: # Define the user-defined network
+  readerai_net:
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: readerai_backend
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    restart: unless-stopped
+    networks: # Assign backend service to the network
+      - readerai_net
+
+  caddy:
+    image: caddy:latest
+    container_name: readerai_caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks: # Assign caddy service to the network
+      - readerai_net
+
+volumes:
+  caddy_data:
+  caddy_config:
+# Note: Before running `docker-compose up`, you need to build the frontend:
+# cd frontend
+# npm install
+# npm run build
+# cd ..

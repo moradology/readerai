@@ -1,0 +1,44 @@
+localhost {
+	tls internal
+	encode gzip
+	log {
+		output stdout
+		format console
+	}
+
+	# WebSocket for the root application
+	# This handles wss://localhost/ws and proxies to backend:8000/ws
+	handle /ws* {
+		reverse_proxy backend:8000
+	}
+
+	# Other explicit API endpoints for the root application
+	handle /initial_passage_http {
+		reverse_proxy backend:8000
+	}
+	handle /chat_http {
+		reverse_proxy backend:8000
+	}
+	handle /health {
+		reverse_proxy backend:8000
+	}
+	handle /chat {
+		reverse_proxy backend:8000
+	}
+
+	# Everything under /demo/ (including /demo/ws) → backend /
+	# `handle_path` strips the /demo prefix.
+	# e.g., /demo/ws proxies to backend:8000/ws
+	# e.g., /demo/foo proxies to backend:8000/foo
+	handle_path /demo/* {
+		reverse_proxy backend:8000
+	}
+
+	# Static files + SPA fallback for the root application
+	# This is the default handler for requests not caught by the handle_path directives above.
+	handle {
+		root * /srv
+		try_files {path} {path}/ /index.html
+		file_server
+	}
+}

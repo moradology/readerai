@@ -383,19 +383,16 @@ This document provides the high-level strategy for implementing the TTS feature,
 ## Component Breakdown
 
 1. **TTS Service Integration**
-
    - Google Cloud TTS API client
    - Voice management system
    - Audio caching layer
 
 2. **Audio Player Interface**
-
    - HTML5 audio player
    - Playback controls
    - Text synchronization
 
 3. **Settings Management**
-
    - User preferences storage
    - Voice selection interface
    - Default settings

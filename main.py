@@ -324,7 +324,31 @@ async def read_index():
 # For now, let's keep them but note they use the old global state logic.
 
 
-@app.get("/initial_passage_http")  # Renamed to avoid conflict if needed
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring."""
+    import datetime
+
+    return {
+        "status": "healthy",
+        "service": "readerai-backend",
+        "timestamp": datetime.datetime.now().isoformat(),
+    }
+
+
+@app.get("/chat", response_class=HTMLResponse)
+async def chat_interface():
+    """Serves the simple WebSocket chat interface."""
+    try:
+        return FileResponse("index.html")
+    except Exception:
+        return HTMLResponse(
+            content="<html><body><h1>Error</h1><p>Chat interface not found.</p></body></html>",
+            status_code=404,
+        )
+
+
+@app.get("/initial_passage_http")
 async def get_initial_passage_with_question_http():
     """Endpoint using the passage from constants.py (HTTP version, uses global state)."""
     # WARNING: This uses a simple state approach, not suitable for multiple users.
@@ -359,7 +383,7 @@ async def get_initial_passage_with_question_http():
     return JSONResponse(response_data)
 
 
-@app.post("/chat_http", response_model=ChatResponse)  # Renamed
+@app.post("/chat_http", response_model=ChatResponse)
 async def chat_endpoint_http(user_input: UserInput):
     """Handles incoming chat messages (HTTP version, uses global state)."""
     # WARNING: Uses per-request state. Not recommended for maintaining context.
@@ -383,7 +407,6 @@ async def chat_endpoint_http(user_input: UserInput):
     return ChatResponse(response=ai_response_text)
 
 
-# Run the App
 if __name__ == "__main__":
     # Ensure the host allows external connections if needed, e.g., host="0.0.0.0"
     # Use 127.0.0.1 for local development.
