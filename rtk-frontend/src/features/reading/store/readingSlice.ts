@@ -36,7 +36,15 @@ export interface ReadingState {
 
   // UI state
   isHighlightingEnabled: boolean;
+  highlightedWordIndex: number | null;
   volume: number;
+
+  // Interruption state
+  activeInterruption: any | null;
+  interruptionResponse: string | null;
+
+  // Checkpoint state
+  activeCheckpoint: any | null;
 
   // Error handling
   error: string | null;
@@ -54,7 +62,11 @@ const initialState: ReadingState = {
   wordsRead: 0,
   progressPercentage: 0,
   isHighlightingEnabled: true,
+  highlightedWordIndex: null,
   volume: 1.0,
+  activeInterruption: null,
+  interruptionResponse: null,
+  activeCheckpoint: null,
   error: null,
 };
 
@@ -144,6 +156,80 @@ export const readingSlice = createSlice({
 
     // Reset
     resetReading: () => initialState,
+
+    // WebSocket synchronized actions
+    sessionStarted: (state, action: PayloadAction<{
+      sessionId: string;
+      timestamp: number;
+    }>) => {
+      state.sessionId = action.payload.sessionId;
+      state.status = 'loading';
+    },
+
+    progressSynced: (state, action: PayloadAction<{
+      currentWordIndex: number;
+      currentTime: number;
+      wordsRead: number;
+    }>) => {
+      state.currentWordIndex = action.payload.currentWordIndex;
+      state.currentTime = action.payload.currentTime;
+      state.wordsRead = action.payload.wordsRead;
+    },
+
+    updateHighlight: (state, action: PayloadAction<{
+      wordIndex: number;
+      duration: number;
+    }>) => {
+      if (state.isHighlightingEnabled) {
+        state.highlightedWordIndex = action.payload.wordIndex;
+      }
+    },
+
+    // Interruption handling
+    createInterruption: (state, action: PayloadAction<{
+      type: string;
+      context: string;
+    }>) => {
+      state.activeInterruption = action.payload;
+      state.status = 'paused';
+    },
+
+    interruptionResponseReceived: (state, action: PayloadAction<{
+      response: string;
+      confidence: number;
+    }>) => {
+      state.interruptionResponse = action.payload.response;
+    },
+
+    clearInterruption: (state) => {
+      state.activeInterruption = null;
+      state.interruptionResponse = null;
+    },
+
+    // Checkpoint handling
+    checkpointTriggered: (state, action: PayloadAction<any>) => {
+      state.activeCheckpoint = action.payload;
+      state.status = 'paused';
+    },
+
+    submitCheckpointAnswer: (_state, _action: PayloadAction<{
+      checkpointId: string;
+      answer: string;
+    }>) => {
+      // This action is handled by middleware
+    },
+
+    clearCheckpoint: (state) => {
+      state.activeCheckpoint = null;
+    },
+
+    // Session end from WebSocket
+    sessionEnded: (state, _action: PayloadAction<{
+      reason: 'completed' | 'abandoned';
+      stats: any;
+    }>) => {
+      state.status = 'ended';
+    },
   },
 });
 
@@ -161,7 +247,19 @@ export const {
   clearError,
   endSession,
   resetReading,
+  sessionStarted,
+  progressSynced,
+  updateHighlight,
+  createInterruption,
+  interruptionResponseReceived,
+  clearInterruption,
+  checkpointTriggered,
+  submitCheckpointAnswer,
+  clearCheckpoint,
+  sessionEnded,
 } = readingSlice.actions;
+
+export const readingActions = readingSlice.actions;
 
 // Selectors
 export const selectReading = (state: RootState) => state.reading;

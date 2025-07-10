@@ -48,8 +48,15 @@ export function ApiDemo() {
       </div>
       {data.question && (
         <div className="mt-4 p-3 bg-blue-50 rounded">
-          <p className="font-medium">Question:</p>
-          <p>{data.question}</p>
+          <p className="font-medium text-blue-900">Question ({data.question.type}):</p>
+          <p className="text-blue-800 mb-2">{data.question.question}</p>
+          {data.question.options && (
+            <ul className="list-disc list-inside text-sm text-blue-700">
+              {data.question.options.map((option, index) => (
+                <li key={index}>{option}</li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>

@@ -89,40 +89,11 @@ export const analyticsMiddleware: Middleware =
   };
 
 /**
- * WebSocket coordination middleware
- * Handles WebSocket connection lifecycle based on Redux actions
- */
-export const websocketMiddleware: Middleware =
-  (_storeApi) => (next) => (action: any) => {
-    const result = next(action);
-
-    // Handle WebSocket-related actions
-    switch (action.type) {
-      case 'auth/loginSuccess':
-        // TODO: Initialize WebSocket connection
-        console.log('[WebSocket] Should initialize connection');
-        break;
-
-      case 'auth/logout':
-        // TODO: Close WebSocket connection
-        console.log('[WebSocket] Should close connection');
-        break;
-
-      case 'reading/startSession':
-        // TODO: Send session start message
-        console.log('[WebSocket] Should send session start');
-        break;
-    }
-
-    return result;
-  };
-
-/**
  * Combines all custom middleware
  */
 export const customMiddleware: Middleware[] = [
   errorLoggingMiddleware,
   ...(process.env.NODE_ENV === 'development' ? [actionLoggingMiddleware] : []),
   ...(import.meta.env.VITE_FEATURE_ANALYTICS === 'true' ? [analyticsMiddleware] : []),
-  websocketMiddleware,
+  // Note: WebSocket middleware is added separately in store.ts to access providers
 ];

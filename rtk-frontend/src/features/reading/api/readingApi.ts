@@ -53,7 +53,15 @@ export const readingApi = baseApi.injectEndpoints({
     }),
 
     // For demo mode - get initial passage without auth
-    getInitialPassage: builder.query<{ passage: Passage; question?: any }, void>({
+    getInitialPassage: builder.query<{
+      passage: Passage;
+      question?: {
+        type: string;
+        question: string;
+        options?: string[];
+        correctAnswer?: string;
+      }
+    }, void>({
       query: () => '/initial_passage',
       // Don't cache this as it's just for demo
       keepUnusedDataFor: 0,

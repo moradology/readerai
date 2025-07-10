@@ -9,7 +9,9 @@ import { getProviderRegistry } from './ProviderRegistry';
 import { getDemoTTSProvider } from './tts/DemoTTSProvider';
 import { getDemoAudioPlayerProvider } from './audio/DemoAudioPlayerProvider';
 import { getDemoReadingSessionProvider } from './session/DemoReadingSessionProvider';
-import type { ProvidersConfig, AnalyticsProvider, BaseProvider } from './types';
+import { DemoWebSocketProvider } from './websocket/DemoWebSocketProvider';
+import { RealWebSocketProvider } from './websocket/RealWebSocketProvider';
+import type { ProvidersConfig, AnalyticsProvider, BaseProvider, WebSocketConfig } from './types';
 
 // Demo Analytics Provider (minimal implementation)
 class DemoAnalyticsProvider implements AnalyticsProvider {
@@ -80,6 +82,9 @@ export function getDefaultProvidersConfig(): ProvidersConfig {
     analytics: {
       type: defaultType,
     },
+    websocket: {
+      type: defaultType,
+    },
   };
 }
 
@@ -134,6 +139,26 @@ export function configureProviders(config: ProvidersConfig = getDefaultProviders
     // TODO: Register real analytics provider (e.g., Google Analytics, Mixpanel)
     console.warn('[configureProviders] Real analytics provider not implemented, using demo');
     registry.register('analytics', new DemoAnalyticsProvider());
+  }
+
+  // Register WebSocket Provider
+  if (config.websocket) {
+    const wsConfig: WebSocketConfig = {
+      url: import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws',
+      reconnect: true,
+      reconnectInterval: 1000,
+      reconnectMaxRetries: 10,
+      heartbeatInterval: 30000,
+    };
+
+    if (config.websocket.type === 'demo') {
+      registry.register('websocket', new DemoWebSocketProvider(wsConfig));
+    } else if (config.websocket.type === 'real') {
+      registry.register('websocket', new RealWebSocketProvider(wsConfig));
+    } else {
+      // Offline mode - no WebSocket needed
+      console.log('[configureProviders] WebSocket disabled in offline mode');
+    }
   }
 
   console.log('[configureProviders] Providers configured:', config);

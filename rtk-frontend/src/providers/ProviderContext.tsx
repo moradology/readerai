@@ -13,6 +13,7 @@ import type {
   AudioPlayerProvider,
   ReadingSessionProvider,
   AnalyticsProvider,
+  WebSocketProvider,
   BaseProvider
 } from './types';
 import { getProviderRegistry } from './ProviderRegistry';
@@ -111,6 +112,21 @@ export function useReadingSessionProvider(): ReadingSessionProvider {
 
 export function useAnalyticsProvider(): AnalyticsProvider {
   return useProvider<AnalyticsProvider>('analytics');
+}
+
+export function useWebSocketProvider(): WebSocketProvider | null {
+  const { registry, isInitialized } = useProviderContext();
+
+  if (!isInitialized) {
+    return null;
+  }
+
+  // WebSocket is optional
+  if (!registry.has('websocket')) {
+    return null;
+  }
+
+  return registry.get<WebSocketProvider>('websocket');
 }
 
 /**

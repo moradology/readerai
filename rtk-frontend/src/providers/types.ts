@@ -181,4 +181,71 @@ export interface ProvidersConfig {
   audioPlayer: ProviderConfig;
   readingSession: ProviderConfig;
   analytics: ProviderConfig;
+  websocket?: ProviderConfig;
+}
+
+/**
+ * WebSocket Message Types
+ */
+export interface WebSocketMessage<T = any> {
+  type: string;
+  payload?: T;
+  id?: string;
+  timestamp?: number;
+}
+
+export interface WebSocketError {
+  code: string;
+  message: string;
+  details?: any;
+}
+
+/**
+ * WebSocket Connection States
+ */
+export type WebSocketState =
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'reconnecting'
+  | 'error';
+
+/**
+ * WebSocket Provider Interface
+ * Manages real-time bidirectional communication
+ */
+export interface WebSocketProvider extends BaseProvider {
+  // Connection management
+  connect(): Promise<void>;
+  disconnect(): void;
+
+  // Message handling
+  send<T = any>(message: WebSocketMessage<T>): void;
+  sendAndWait<T = any, R = any>(message: WebSocketMessage<T>, timeoutMs?: number): Promise<R>;
+
+  // State
+  getState(): WebSocketState;
+  isConnected(): boolean;
+
+  // Event subscriptions
+  on(event: 'message', handler: (message: WebSocketMessage) => void): () => void;
+  on(event: 'state', handler: (state: WebSocketState) => void): () => void;
+  on(event: 'error', handler: (error: WebSocketError) => void): () => void;
+  on(event: string, handler: (data: any) => void): () => void;
+
+  // Typed message handlers
+  onMessage<T = any>(type: string, handler: (payload: T) => void): () => void;
+}
+
+/**
+ * WebSocket Configuration
+ */
+export interface WebSocketConfig {
+  url: string;
+  protocols?: string[];
+  reconnect?: boolean;
+  reconnectInterval?: number;
+  reconnectMaxRetries?: number;
+  heartbeatInterval?: number;
+  messageTimeout?: number;
 }

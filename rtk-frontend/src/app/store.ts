@@ -15,16 +15,33 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 
 // Import reducers (will be added as we create them)
 import readingReducer from '@features/reading/store/readingSlice';
+import { websocketReducer } from '@features/websocket/websocketSlice';
 import { baseApi } from '@shared/api/baseApi';
 
 // Custom middleware will be imported here
 import { customMiddleware } from './middleware';
+import { createWebSocketMiddleware } from './middleware/websocket';
+import { getProviderRegistry } from '@providers/ProviderRegistry';
+import type { WebSocketProvider } from '@providers/types';
 
 // Define the root reducer
 const rootReducer = {
   reading: readingReducer,
+  websocket: websocketReducer,
   [baseApi.reducerPath]: baseApi.reducer,
 };
+
+// WebSocket provider getter
+const getWebSocketProvider = (): WebSocketProvider | null => {
+  const registry = getProviderRegistry();
+  if (registry.has('websocket')) {
+    return registry.get<WebSocketProvider>('websocket');
+  }
+  return null;
+};
+
+// Create WebSocket middleware
+const websocketMiddleware = createWebSocketMiddleware(getWebSocketProvider);
 
 // Create the store instance
 export const store = configureStore({
@@ -37,14 +54,17 @@ export const store = configureStore({
           'persist/PERSIST',
           `${baseApi.reducerPath}/executeMutation`,
           `${baseApi.reducerPath}/executeQuery`,
+          'websocket/messageReceived',
+          'websocket/messageSent',
         ],
         // Ignore these field paths in all actions
         ignoredActionPaths: ['meta.arg', 'payload.timestamp'],
         // Ignore these paths in the state
-        ignoredPaths: ['items.dates'],
+        ignoredPaths: ['items.dates', 'websocket.messageHistory'],
       },
     })
       .concat(baseApi.middleware)
+      .concat(websocketMiddleware)
       .concat(...customMiddleware),
   devTools: process.env.NODE_ENV !== 'production',
 });
@@ -68,12 +88,15 @@ export const createStore = (preloadedState?: Partial<RootState>) =>
             'persist/PERSIST',
             `${baseApi.reducerPath}/executeMutation`,
             `${baseApi.reducerPath}/executeQuery`,
+            'websocket/messageReceived',
+            'websocket/messageSent',
           ],
           ignoredActionPaths: ['meta.arg', 'payload.timestamp'],
-          ignoredPaths: ['items.dates'],
+          ignoredPaths: ['items.dates', 'websocket.messageHistory'],
         },
       })
         .concat(baseApi.middleware)
+        .concat(websocketMiddleware)
         .concat(...customMiddleware),
     preloadedState,
     devTools: process.env.NODE_ENV !== 'production',

@@ -194,6 +194,111 @@ VITE_FEATURE_ANALYTICS=true  # Enable analytics
 VITE_LOG_LEVEL=debug        # Logging level
 ```
 
+## 🔄 Development Flow & Backend Integration
+
+### Understanding the Full Stack Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Production (Docker)                    │
+│  ┌─────────────┐         ┌───────────────────────────┐ │
+│  │   Caddy     │ ──────► │   Python Backend (FastAPI)│ │
+│  │  (Reverse   │         │   - DSPy Integration      │ │
+│  │   Proxy)    │         │   - TTS Services          │ │
+│  │             │         │   - WebSocket Handler     │ │
+│  │  Port 80/443│         │   Port 8000               │ │
+│  └─────────────┘         └───────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                 Development Environment                  │
+│  ┌─────────────┐         ┌───────────────────────────┐ │
+│  │ Vite Dev    │ ──────► │   Python Backend          │ │
+│  │ Server      │  proxy  │   (Same as above)         │ │
+│  │             │         │                           │ │
+│  │ Port 3001   │         │   Port 8000               │ │
+│  └─────────────┘         └───────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Development Mode Flow
+
+1. **Frontend (React)** runs on port 3001 via Vite dev server
+2. **Backend (Python/FastAPI)** runs on port 8000
+3. **Vite Proxy** forwards `/api/*` and `/ws/*` requests to prevent CORS issues
+
+```yaml
+# What happens when you make an API call:
+Frontend:     fetch('/api/passages')
+     ↓
+Vite Server:  Intercepts request at localhost:3001/api/passages
+     ↓
+Vite Proxy:   Forwards to localhost:8000/api/passages
+     ↓
+Python:       Handles request, returns response
+     ↓
+Frontend:     Receives data (no CORS issues!)
+```
+
+### Mock vs Real Backend
+
+#### With Mocks Enabled (VITE_MOCK_API=true)
+
+```
+Browser → Vite Server → MSW Intercepts → Returns Mock Data
+                         ↓
+                    (Never reaches Python backend)
+```
+
+#### With Mocks Disabled (VITE_MOCK_API=false)
+
+```
+Browser → Vite Server → Proxy → Python Backend
+                                    ↓
+                                 Real Data
+```
+
+### Why the Proxy?
+
+The Vite proxy is **not a separate backend** - it's a development convenience that:
+
+- **Solves CORS**: Browsers block cross-origin requests (3001 → 8000)
+- **Simplifies Development**: Makes API calls "just work" in development
+- **Mirrors Production**: In production, Caddy serves the same proxy role
+
+### Running the Full Stack
+
+```bash
+# Terminal 1: Start Python backend
+cd /path/to/readerai
+python main.py  # Runs on port 8000
+
+# Terminal 2: Start React frontend
+cd /path/to/readerai/rtk-frontend
+npm run dev     # Runs on port 3001 with proxy to 8000
+```
+
+### API Endpoints Available
+
+When connected to the real backend, these endpoints are available:
+
+- `/api/initial_passage` - Get starting passage with question
+- `/api/passages` - List all passages
+- `/api/sessions` - Create/manage reading sessions
+- `/api/sessions/:id/progress` - Update reading position
+- `/api/sessions/:id/interruptions` - Handle student questions
+- `/api/sessions/:id/checkpoints` - Submit checkpoint answers
+- `/ws` - WebSocket connection for real-time features
+
+### Production Deployment
+
+In production, the architecture changes:
+
+1. Frontend is built to static files: `npm run build`
+2. Caddy serves static files and proxies API requests
+3. No Vite involved - just Caddy → Python
+4. Docker Compose orchestrates everything
+
 ## 🧪 Testing Strategy
 
 ### Unit Tests
