@@ -11,21 +11,45 @@
  * - Initialize app-wide services
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@app/hooks';
 import { selectReadingStatus, play, pause } from '@features/reading/store/readingSlice';
 import { ApiDemo } from '@features/reading/components/ApiDemo';
 import { ProviderDemo } from '@features/reading/components/ProviderDemo';
 import { StateVisualizerShowcase } from './showcases/examples/StateVisualizerShowcase';
 import { WebSocketShowcase } from './showcases/WebSocketShowcase';
+import { AudioStreamingShowcase } from './showcases/AudioStreamingShowcase';
 import { ShowcaseSection } from './showcases/components/ShowcaseContainer';
 
-type TabId = 'overview' | 'redux' | 'api' | 'providers' | 'websocket' | 'interactive';
+type TabId = 'overview' | 'redux' | 'api' | 'providers' | 'websocket' | 'audio' | 'interactive';
+
+const VALID_TABS: TabId[] = ['overview', 'redux', 'api', 'providers', 'websocket', 'audio', 'interactive'];
+
+function getTabFromHash(): TabId {
+  const hash = window.location.hash.slice(1); // Remove the #
+  return VALID_TABS.includes(hash as TabId) ? (hash as TabId) : 'overview';
+}
 
 function App() {
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>(getTabFromHash());
   const dispatch = useAppDispatch();
   const readingStatus = useAppSelector(selectReadingStatus);
+
+  // Handle hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveTab(getTabFromHash());
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Update hash when tab changes
+  const handleTabChange = (tab: TabId): void => {
+    setActiveTab(tab);
+    window.location.hash = tab;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,11 +73,12 @@ function App() {
               { id: 'api' as TabId, label: 'API Integration' },
               { id: 'providers' as TabId, label: 'Provider System' },
               { id: 'websocket' as TabId, label: 'WebSocket' },
+              { id: 'audio' as TabId, label: 'Audio Streaming' },
               { id: 'interactive' as TabId, label: 'Interactive Demos' },
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
@@ -114,8 +139,8 @@ function App() {
                   { feature: 'Base API Configuration', status: 'completed' },
                   { feature: 'Demo Providers', status: 'completed' },
                   { feature: 'WebSocket Integration', status: 'completed' },
+                  { feature: 'Audio Streaming Infrastructure', status: 'completed' },
                   { feature: 'Reading UI Components', status: 'in-progress' },
-                  { feature: 'Audio Streaming', status: 'planned' },
                 ].map(item => (
                   <div key={item.feature} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                     <span className="font-medium">{item.feature}</span>
@@ -198,6 +223,10 @@ function App() {
 
         {activeTab === 'websocket' && (
           <WebSocketShowcase />
+        )}
+
+        {activeTab === 'audio' && (
+          <AudioStreamingShowcase />
         )}
 
         {activeTab === 'interactive' && (
