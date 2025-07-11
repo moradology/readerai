@@ -5,12 +5,15 @@ description = "AI-powered reading companion for children"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aioboto3>=15.0.0",
     "dspy>=2.6.27",
     "fastapi>=0.116.0",
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.1",
     "pytest>=8.4.1",
     "python-dotenv>=1.1.1",
+    "rich>=14.0.0",
+    "typer>=0.16.0",
     "uvicorn[standard]>=0.35.0",
 ]
 
@@ -33,6 +36,7 @@ dev = [
 readerai-passages = "readerai.cli.extract_passages:main"
 readerai-vocabulary = "readerai.cli.run_vocabulary:main"
 readerai-comprehension = "readerai.cli.run_comprehension:main"
+readerai-ingest = "readerai.cli.ingest:app"
 
 [tool.mypy]
 python_version = "3.13"
