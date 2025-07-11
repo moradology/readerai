@@ -219,7 +219,14 @@ async def process_story(
 ):
     """Process all chunks for a story"""
     story_slug = slugify(title)
-    session = aioboto3.Session()
+    settings = get_settings()
+
+    # Create session with profile if specified
+    if settings.aws.profile:
+        session = aioboto3.Session(profile_name=settings.aws.profile)
+        console.print(f"[dim]Using AWS profile: {settings.aws.profile}[/dim]")
+    else:
+        session = aioboto3.Session()
 
     chunk_metadata = []
 
@@ -327,7 +334,13 @@ def list_stories(
 
 async def list_stories_async(bucket_name: str, region: str):
     """List stories from S3"""
-    session = aioboto3.Session()
+    settings = get_settings()
+
+    # Create session with profile if specified
+    if settings.aws.profile:
+        session = aioboto3.Session(profile_name=settings.aws.profile)
+    else:
+        session = aioboto3.Session()
 
     async with session.client("s3") as s3:
         # List all metadata.json files

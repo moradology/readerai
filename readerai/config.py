@@ -20,7 +20,8 @@ class AWSSettings(BaseSettings):
     polly_voice_id: str = Field(default="Joanna", description="Default Polly voice")
     polly_engine: str = Field(default="standard", description="Polly engine type")
 
-    # Optional: for local development
+    # AWS credentials options
+    profile: Optional[str] = Field(default=None, description="AWS profile name")
     aws_access_key_id: Optional[str] = Field(default=None, description="AWS access key")
     aws_secret_access_key: Optional[str] = Field(default=None, description="AWS secret")
 

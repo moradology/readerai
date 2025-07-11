@@ -58,6 +58,8 @@ def show_all_config(settings):
     aws.add(f"Audio Cache Bucket: {settings.aws.audio_cache_bucket}")
     aws.add(f"Polly Voice: {settings.aws.polly_voice_id}")
     aws.add(f"Polly Engine: {settings.aws.polly_engine}")
+    if settings.aws.profile:
+        aws.add(f"Profile: {settings.aws.profile}")
 
     # Server
     server = tree.add("[cyan]Server[/cyan]")
@@ -101,6 +103,7 @@ def show_aws_config(settings):
     table.add_row("Audio Cache Bucket", settings.aws.audio_cache_bucket)
     table.add_row("Polly Voice ID", settings.aws.polly_voice_id)
     table.add_row("Polly Engine", settings.aws.polly_engine)
+    table.add_row("Profile", settings.aws.profile or "Not set")
     table.add_row(
         "Access Key", "✓ Set" if settings.aws.aws_access_key_id else "✗ Not set"
     )

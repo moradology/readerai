@@ -11,9 +11,16 @@ import boto3
 
 
 class PollyTester:
-    def __init__(self, bucket_name: str, region: str = "us-east-1"):
-        self.polly = boto3.client("polly", region_name=region)
-        self.s3 = boto3.client("s3", region_name=region)
+    def __init__(
+        self, bucket_name: str, region: str = "us-east-1", profile: str = None
+    ):
+        if profile:
+            session = boto3.Session(profile_name=profile)
+            self.polly = session.client("polly", region_name=region)
+            self.s3 = session.client("s3", region_name=region)
+        else:
+            self.polly = boto3.client("polly", region_name=region)
+            self.s3 = boto3.client("s3", region_name=region)
         self.bucket_name = bucket_name
 
     def generate_cache_key(self, text: str, voice_id: str = "Joanna") -> str:
@@ -81,13 +88,16 @@ def main():
     # Get bucket name from environment or use default
     import os
 
-    bucket_name = os.getenv("AUDIO_CACHE_BUCKET", "readerai-audio-cache-dev")
+    bucket_name = os.getenv("AWS_AUDIO_CACHE_BUCKET", "readerai-audio-cache-dev")
+    profile = os.getenv("AWS_PROFILE")
 
     print("🎤 Testing AWS Polly Integration")
     print(f"📦 Using bucket: {bucket_name}")
+    if profile:
+        print(f"👤 Using AWS profile: {profile}")
     print("=" * 50)
 
-    tester = PollyTester(bucket_name)
+    tester = PollyTester(bucket_name, profile=profile)
 
     for sample in test_samples:
         print(f"\n📝 Testing: {sample['name']}")
