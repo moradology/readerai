@@ -14,6 +14,8 @@ from pydantic import BaseModel
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from readerai.config import get_settings
+
 app = typer.Typer()
 console = Console()
 
@@ -45,8 +47,12 @@ def slugify(text: str) -> str:
     return text.lower().replace(" ", "-").replace("'", "").replace('"', "")
 
 
-def create_chunks(text: str, target_words: int = 400) -> list[Chunk]:
+def create_chunks(text: str, target_words: Optional[int] = None) -> list[Chunk]:
     """Split text into chunks at paragraph boundaries"""
+    settings = get_settings()
+    if target_words is None:
+        target_words = settings.audio.chunk_target_words
+
     paragraphs = text.strip().split("\n\n")
     chunks = []
     current_chunk = []
@@ -108,8 +114,12 @@ async def synthesize_chunk(
     """Synthesize and upload a single chunk"""
     async with session.client("polly") as polly, session.client("s3") as s3:
         # Generate audio
+        settings = get_settings()
         response = await polly.synthesize_speech(
-            Text=chunk.text, VoiceId=voice_id, OutputFormat="mp3", Engine="standard"
+            Text=chunk.text,
+            VoiceId=voice_id,
+            OutputFormat=settings.audio.audio_format,
+            Engine=settings.aws.polly_engine,
         )
 
         # Read audio stream
@@ -143,19 +153,25 @@ async def synthesize_chunk(
 def story(
     title: str = typer.Argument(..., help="Story title"),  # noqa: B008
     text_file: Path = typer.Argument(..., help="Path to text file"),  # noqa: B008
-    voice: str = typer.Option("Joanna", "--voice", "-v", help="AWS Polly voice ID"),
+    voice: Optional[str] = typer.Option(
+        None, "--voice", "-v", help="AWS Polly voice ID"
+    ),
     grade_level: Optional[int] = typer.Option(
         None, "--grade", "-g", help="Grade level (1-12)"
     ),
     tags: Optional[str] = typer.Option(
         None, "--tags", "-t", help="Comma-separated tags"
     ),
-    bucket: str = typer.Option(
-        "readerai-audio-cache-dev", "--bucket", "-b", help="S3 bucket name"
-    ),
-    region: str = typer.Option("us-east-1", "--region", "-r", help="AWS region"),
+    bucket: Optional[str] = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
+    region: Optional[str] = typer.Option(None, "--region", "-r", help="AWS region"),
 ):
     """Ingest a single story and pre-generate all audio chunks"""
+
+    # Get defaults from settings
+    settings = get_settings()
+    voice = voice or settings.aws.polly_voice_id
+    bucket = bucket or settings.aws.audio_cache_bucket
+    region = region or settings.aws.region
 
     # Validate file exists
     if not text_file.exists():
@@ -171,6 +187,8 @@ def story(
     console.print(f"\n[bold blue]Ingesting story:[/bold blue] {title}")
     console.print(f"Voice: {voice}")
     console.print(f"Text length: {len(text)} characters")
+    console.print(f"Bucket: {bucket}")
+    console.print(f"Region: {region}")
 
     # Create chunks
     chunks = create_chunks(text)
@@ -258,13 +276,19 @@ async def process_story(
 @app.command()
 def bulk(
     directory: Path = typer.Argument(..., help="Directory containing text files"),  # noqa: B008
-    voice: str = typer.Option("Joanna", "--voice", "-v", help="AWS Polly voice ID"),
-    bucket: str = typer.Option(
-        "readerai-audio-cache-dev", "--bucket", "-b", help="S3 bucket name"
+    voice: Optional[str] = typer.Option(
+        None, "--voice", "-v", help="AWS Polly voice ID"
     ),
-    region: str = typer.Option("us-east-1", "--region", "-r", help="AWS region"),
+    bucket: Optional[str] = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
+    region: Optional[str] = typer.Option(None, "--region", "-r", help="AWS region"),
 ):
     """Bulk ingest all .txt files in a directory"""
+
+    # Get defaults from settings
+    settings = get_settings()
+    voice = voice or settings.aws.polly_voice_id
+    bucket = bucket or settings.aws.audio_cache_bucket
+    region = region or settings.aws.region
 
     if not directory.exists() or not directory.is_dir():
         console.print(f"[red]Error: '{directory}' is not a valid directory[/red]")
@@ -291,12 +315,13 @@ def bulk(
 
 @app.command()
 def list_stories(
-    bucket: str = typer.Option(
-        "readerai-audio-cache-dev", "--bucket", "-b", help="S3 bucket name"
-    ),
-    region: str = typer.Option("us-east-1", "--region", "-r", help="AWS region"),
+    bucket: Optional[str] = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
+    region: Optional[str] = typer.Option(None, "--region", "-r", help="AWS region"),
 ):
     """List all ingested stories"""
+    settings = get_settings()
+    bucket = bucket or settings.aws.audio_cache_bucket
+    region = region or settings.aws.region
     asyncio.run(list_stories_async(bucket, region))
 
 

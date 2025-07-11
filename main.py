@@ -6,7 +6,6 @@ from typing import Any  # Added type hints
 
 import dspy
 import uvicorn
-from dotenv import load_dotenv
 from fastapi import (  # Added WebSocket imports
     FastAPI,
     WebSocket,
@@ -16,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
+from readerai.config import get_settings
 from readerai.constants import TEST_PASSAGE  # Import passage from constants
 from readerai.flows.response import (
     assess_student_answer,
@@ -23,14 +23,23 @@ from readerai.flows.response import (
     generate_vocab_question_data,
 )
 
-# --- DSPy Configuration (Keep as before) ---
-load_dotenv()
+# --- Configuration ---
+settings = get_settings()
+
+# --- DSPy Configuration ---
 try:
-    google_api_key = os.getenv("GOOGLE_API_KEY")
-    if not google_api_key:
-        raise ValueError("GOOGLE_API_KEY not found in environment variables.")
-    llm_model_name = "gemini/gemini-2.0-flash-001"
-    llm = dspy.LM(llm_model_name, api_key=google_api_key)
+    # Try LLM_API_KEY first (from our config), fall back to GOOGLE_API_KEY
+    api_key = settings.llm.api_key or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError("LLM API key not found in environment variables.")
+
+    llm_model_name = settings.llm.model
+    if settings.llm.provider == "openai":
+        llm_model_name = f"openai/{llm_model_name}"
+    elif settings.llm.provider == "google":
+        llm_model_name = f"gemini/{llm_model_name}"
+
+    llm = dspy.LM(llm_model_name, api_key=api_key)
     dspy.settings.configure(lm=llm)
     print(f"DSPy configured successfully with model: {llm_model_name}")
 except Exception as e:
@@ -104,15 +113,15 @@ class ChatResponse(BaseModel):
 
 # Initialize FastAPI
 app = FastAPI(
-    title="ReaderAI Chatbot API",
+    title=f"{settings.app_name} API",
     description="API interface for the ReaderAI project (including WebSockets).",
-    version="1.1.0",  # Updated version
+    version=settings.version,
 )
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://localhost", "http://localhost"],
+    allow_origins=settings.server.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -434,6 +443,10 @@ async def chat_endpoint_http(user_input: UserInput):
 
 
 if __name__ == "__main__":
-    # Ensure the host allows external connections if needed, e.g., host="0.0.0.0"
-    # Use 127.0.0.1 for local development.
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    # Use settings for host and port
+    uvicorn.run(
+        "main:app",
+        host=settings.server.host,
+        port=settings.server.port,
+        reload=settings.server.debug,
+    )
