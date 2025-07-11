@@ -169,7 +169,3 @@ def show_db_config(settings):
     table.add_row("Echo SQL", str(settings.db.echo))
 
     console.print(table)
-
-
-if __name__ == "__main__":
-    app()

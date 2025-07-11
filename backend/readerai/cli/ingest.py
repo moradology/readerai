@@ -372,7 +372,3 @@ async def list_stories_async(bucket_name: str, region: str):
                 # Just show the directory if no metadata
                 story_name = story_prefix.split("/")[-2]
                 console.print(f"\n• {story_name} [dim](no metadata)[/dim]")
-
-
-if __name__ == "__main__":
-    app()
