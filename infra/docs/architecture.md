@@ -14,10 +14,10 @@ ReaderAI uses AWS services to provide scalable, cost-effective text-to-speech fu
        ▲                    │                    │
        │                    │                    │
        │                    ▼                    ▼
-       │            ┌─────────────┐     ┌─────────────┐
-       │            │   S3 Cache  │     │  CloudFront │
-       └────────────│  ONEZONE_IA │◀────│    (CDN)    │
-                    └─────────────┘     └─────────────┘
+       │            ┌─────────────┐
+       └────────────│   S3 Cache  │◀─────────────┘
+                    │  ONEZONE_IA │
+                    └─────────────┘
 ```
 
 ## Cost Analysis
@@ -34,18 +34,18 @@ ReaderAI uses AWS services to provide scalable, cost-effective text-to-speech fu
 - Requests: $0.001 per 1,000 requests
 - Example: 10,000 cached stories (50GB) = $0.50/month
 
-### CloudFront CDN
+### S3 Data Transfer
 
-- Data transfer: $0.085 per GB (first 10TB/month)
-- HTTP requests: $0.0075 per 10,000 requests
-- Example: 100GB/month = $8.50
+- Data transfer: $0.09 per GB (to internet)
+- GET requests: $0.0004 per 1,000 requests
+- Example: 100GB/month = $9.00
 
 ### Total Monthly Cost Estimate (1,000 daily users)
 
 - Polly generation: ~$20 (assuming 20% cache miss rate)
 - S3 storage: ~$1
-- CloudFront: ~$10
-- **Total: ~$31/month**
+- S3 data transfer: ~$9
+- **Total: ~$30/month**
 
 ## Caching Strategy
 
@@ -58,7 +58,7 @@ cache_key = sha256(f"{text}:{voice_id}:{speed}").hexdigest()
 ### Cache Lifecycle
 
 1. **First request**: Generate with Polly, store in S3
-2. **Subsequent requests**: Serve from S3/CloudFront
+2. **Subsequent requests**: Serve directly from S3
 3. **After 30 days**: Move to ONEZONE_IA (automatic)
 4. **After 90 days**: Delete (automatic)
 
@@ -99,8 +99,8 @@ def create_chunks(text: str, target_size: int = 400) -> List[str]:
 
 ## Security Considerations
 
-1. **S3 Access**: Bucket is private, accessed only via CloudFront
-2. **CloudFront**: HTTPS only, with Origin Access Control
+1. **S3 Access**: Public read-only for `/polly/*` path
+2. **HTTPS**: Enforced by S3 endpoints
 3. **IAM Roles**: Least privilege for backend services
 4. **Cache Keys**: Use SHA-256 to prevent enumeration
 
@@ -111,7 +111,7 @@ def create_chunks(text: str, target_size: int = 400) -> List[str]:
 - Polly API calls/minute (rate limiting)
 - Cache hit rate (target >80%)
 - S3 storage usage
-- CloudFront bandwidth
+- S3 GET requests/minute
 
 ### Alarms
 

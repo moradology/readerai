@@ -8,7 +8,6 @@ ReaderAI uses the following AWS services:
 
 - **S3**: Audio file caching with ONEZONE_IA storage class
 - **Polly**: Text-to-speech synthesis
-- **CloudFront**: CDN for audio delivery (optional)
 - **DynamoDB/RDS**: Metadata storage (TBD)
 
 ## Directory Structure
@@ -24,7 +23,7 @@ infra/
 ## Audio Caching Architecture
 
 ```
-Text + Voice ID → Polly API → S3 (ONEZONE_IA) → CloudFront → Users
+Text + Voice ID → Polly API → S3 (ONEZONE_IA) → Users
                      ↓
                   Cache Key
                      ↓

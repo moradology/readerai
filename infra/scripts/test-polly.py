@@ -109,7 +109,6 @@ def main():
     print("✅ All tests passed!")
     print("\nYou can now access the audio files at:")
     print(f"   https://{bucket_name}.s3.amazonaws.com/polly/Joanna/[cache_key].mp3")
-    print("\nOr through CloudFront if configured.")
 
 
 if __name__ == "__main__":
