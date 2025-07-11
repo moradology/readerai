@@ -11,7 +11,7 @@ ReaderAI follows a unique development methodology that combines traditional soft
 3. **AI-Assisted Implementation**: Features are implemented using structured prompts that guide development
 4. **Comprehensive Testing**: Rigorous testing ensures reliability across different scenarios
 
-For more details on our development process, see [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md).
+For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## ✨ Key Features
 
@@ -277,7 +277,7 @@ Model recommendations:
 
 We welcome contributions to ReaderAI! Whether you're interested in fixing bugs, adding new features, or improving documentation, your help is appreciated.
 
-Please read our [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md) guide to learn about:
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide to learn about:
 
 - Our feature development process
 - Coding standards
@@ -368,7 +368,8 @@ readerai/
 ├── frontend/          # React TypeScript frontend
 ├── infra/             # Infrastructure (Terraform, AWS)
 ├── docs/              # Architecture documentation
-└── Caddyfile         # Reverse proxy configuration
+├── Caddyfile          # Reverse proxy configuration
+└── CONTRIBUTING.md    # Development guidelines
 ```
 
 ## 🔧 Troubleshooting

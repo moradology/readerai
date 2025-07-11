@@ -22,8 +22,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./frontend/dist:/srv:ro
+      - ../Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../frontend/dist:/srv:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -36,7 +36,7 @@ volumes:
   caddy_data:
   caddy_config:
 # Note: Before running `docker-compose up`, you need to build the frontend:
-# cd frontend
+# cd ../frontend
 # npm install
 # npm run build
-# cd ..
+# cd ../backend
