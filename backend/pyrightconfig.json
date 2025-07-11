@@ -1,7 +1,7 @@
 {
-  "include": ["backend"],
-  "exclude": ["**/__pycache__", "**/.venv", "**/node_modules", "frontend"],
-  "venvPath": "backend",
+  "include": ["."],
+  "exclude": ["**/__pycache__", "**/.venv", "**/node_modules"],
+  "venvPath": ".",
   "venv": ".venv",
   "pythonVersion": "3.13",
   "typeCheckingMode": "standard",
