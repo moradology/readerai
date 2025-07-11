@@ -6,14 +6,15 @@ import asyncio
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import aioboto3
 import typer
 from pydantic import BaseModel
-from readerai.config import get_settings
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
+
+from readerai.config import get_settings
 
 app = typer.Typer()
 console = Console()
@@ -37,8 +38,8 @@ class StoryMetadata(BaseModel):
     total_words: int
     chunks: list[dict[str, Any]]
     voice_id: str
-    grade_level: Optional[int] = None
-    tags: Optional[list[str]] = None
+    grade_level: int | None = None
+    tags: list[str] | None = None
 
 
 def slugify(text: str) -> str:
@@ -46,7 +47,7 @@ def slugify(text: str) -> str:
     return text.lower().replace(" ", "-").replace("'", "").replace('"', "")
 
 
-def create_chunks(text: str, target_words: Optional[int] = None) -> list[Chunk]:
+def create_chunks(text: str, target_words: int | None = None) -> list[Chunk]:
     """Split text into chunks at paragraph boundaries"""
     settings = get_settings()
     if target_words is None:
@@ -111,7 +112,7 @@ async def synthesize_chunk(
     bucket_name: str,
 ) -> dict[str, Any]:
     """Synthesize and upload a single chunk"""
-    async with session.client("polly") as polly, session.client("s3") as s3:
+    async with session.client("polly") as polly, session.client("s3") as s3:  # type: ignore
         # Generate audio
         settings = get_settings()
         response = await polly.synthesize_speech(
@@ -152,17 +153,13 @@ async def synthesize_chunk(
 def story(
     title: str = typer.Argument(..., help="Story title"),  # noqa: B008
     text_file: Path = typer.Argument(..., help="Path to text file"),  # noqa: B008
-    voice: Optional[str] = typer.Option(
-        None, "--voice", "-v", help="AWS Polly voice ID"
-    ),
-    grade_level: Optional[int] = typer.Option(
+    voice: str | None = typer.Option(None, "--voice", "-v", help="AWS Polly voice ID"),
+    grade_level: int | None = typer.Option(
         None, "--grade", "-g", help="Grade level (1-12)"
     ),
-    tags: Optional[str] = typer.Option(
-        None, "--tags", "-t", help="Comma-separated tags"
-    ),
-    bucket: Optional[str] = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
-    region: Optional[str] = typer.Option(None, "--region", "-r", help="AWS region"),
+    tags: str | None = typer.Option(None, "--tags", "-t", help="Comma-separated tags"),
+    bucket: str | None = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
+    region: str | None = typer.Option(None, "--region", "-r", help="AWS region"),
 ):
     """Ingest a single story and pre-generate all audio chunks"""
 
@@ -211,8 +208,8 @@ async def process_story(
     title: str,
     chunks: list[Chunk],
     voice_id: str,
-    grade_level: Optional[int],
-    tags: Optional[list[str]],
+    grade_level: int | None,
+    tags: list[str] | None,
     bucket_name: str,
     region: str,
 ):
@@ -254,7 +251,7 @@ async def process_story(
 
     # Save metadata
     total_words = sum(c.word_count for c in chunks)
-    metadata = StoryMetadata(
+    story_metadata = StoryMetadata(
         title=title,
         slug=story_slug,
         total_words=total_words,
@@ -265,11 +262,11 @@ async def process_story(
     )
 
     # Save metadata to S3
-    async with session.client("s3") as s3:
+    async with session.client("s3") as s3:  # type: ignore
         await s3.put_object(
             Bucket=bucket_name,
             Key=f"stories/{story_slug}/metadata.json",
-            Body=metadata.model_dump_json(indent=2),
+            Body=story_metadata.model_dump_json(indent=2),
             ContentType="application/json",
         )
 
@@ -282,11 +279,9 @@ async def process_story(
 @app.command()
 def bulk(
     directory: Path = typer.Argument(..., help="Directory containing text files"),  # noqa: B008
-    voice: Optional[str] = typer.Option(
-        None, "--voice", "-v", help="AWS Polly voice ID"
-    ),
-    bucket: Optional[str] = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
-    region: Optional[str] = typer.Option(None, "--region", "-r", help="AWS region"),
+    voice: str | None = typer.Option(None, "--voice", "-v", help="AWS Polly voice ID"),
+    bucket: str | None = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
+    region: str | None = typer.Option(None, "--region", "-r", help="AWS region"),
 ):
     """Bulk ingest all .txt files in a directory"""
 
@@ -321,8 +316,8 @@ def bulk(
 
 @app.command()
 def list_stories(
-    bucket: Optional[str] = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
-    region: Optional[str] = typer.Option(None, "--region", "-r", help="AWS region"),
+    bucket: str | None = typer.Option(None, "--bucket", "-b", help="S3 bucket name"),
+    region: str | None = typer.Option(None, "--region", "-r", help="AWS region"),
 ):
     """List all ingested stories"""
     settings = get_settings()
@@ -341,7 +336,7 @@ async def list_stories_async(bucket_name: str, region: str):
     else:
         session = aioboto3.Session()
 
-    async with session.client("s3") as s3:
+    async with session.client("s3") as s3:  # type: ignore
         # List all metadata.json files
         response = await s3.list_objects_v2(
             Bucket=bucket_name, Prefix="stories/", Delimiter="/"

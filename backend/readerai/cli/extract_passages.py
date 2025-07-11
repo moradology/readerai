@@ -15,6 +15,7 @@ import time
 from typing import TextIO
 
 from dotenv import load_dotenv
+
 from readerai.flows.passage_extractor import PassageExtractorFlow
 from readerai.utils.dspy_config import configure_dspy
 from readerai.utils.text_chunker import TextChunker
@@ -298,7 +299,7 @@ def main() -> int:
     extractor = PassageExtractorFlow()
 
     # Setup output stream
-    output_stream: TextIO
+    output_stream: TextIO = sys.stdout
     try:
         if args.output_file:
             output_stream = open(args.output_file, "w", encoding="utf-8")

@@ -14,6 +14,7 @@ from fastapi import (  # Added WebSocket imports
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
+
 from readerai.config import get_settings
 from readerai.constants import TEST_PASSAGE  # Import passage from constants
 from readerai.flows.response import (
@@ -321,7 +322,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 websocket,
             )
         except Exception:
-            pass  # Ignore if sending fails during error handling
+            pass  # nosec B110 - Ignore if sending fails during error handling
         finally:
             manager.disconnect(websocket)  # Ensure cleanup
 
@@ -384,7 +385,7 @@ async def get_initial_passage_with_question_http():
 
     initial_passage = TEST_PASSAGE
     question_data = None
-    response_data = {"passage": initial_passage}
+    response_data: dict[str, Any] = {"passage": initial_passage}
 
     # Format response to match frontend expectations
     if dspy.settings.lm:

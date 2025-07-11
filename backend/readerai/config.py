@@ -2,8 +2,6 @@
 Application configuration using pydantic-settings
 """
 
-from typing import Optional
-
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -21,9 +19,9 @@ class AWSSettings(BaseSettings):
     polly_engine: str = Field(default="standard", description="Polly engine type")
 
     # AWS credentials options
-    profile: Optional[str] = Field(default=None, description="AWS profile name")
-    aws_access_key_id: Optional[str] = Field(default=None, description="AWS access key")
-    aws_secret_access_key: Optional[str] = Field(default=None, description="AWS secret")
+    profile: str | None = Field(default=None, description="AWS profile name")
+    aws_access_key_id: str | None = Field(default=None, description="AWS access key")
+    aws_secret_access_key: str | None = Field(default=None, description="AWS secret")
 
     model_config = SettingsConfigDict(env_prefix="AWS_")
 
@@ -50,7 +48,7 @@ class LLMSettings(BaseSettings):
 
     provider: str = Field(default="openai", description="LLM provider")
     model: str = Field(default="gpt-4", description="Model name")
-    api_key: Optional[str] = Field(default=None, description="API key")
+    api_key: str | None = Field(default=None, description="API key")
     temperature: float = Field(default=0.7, description="Temperature")
     max_tokens: int = Field(default=1000, description="Max tokens")
 
@@ -102,7 +100,7 @@ class Settings(BaseSettings):
 
 
 # Singleton instance
-_settings: Optional[Settings] = None
+_settings: Settings | None = None
 
 
 def get_settings() -> Settings:

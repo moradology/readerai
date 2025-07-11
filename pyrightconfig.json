@@ -1,0 +1,6 @@
+{
+  "include": ["backend"],
+  "exclude": ["backend/integration-tests"],
+  "venvPath": "backend",
+  "venv": ".venv"
+}

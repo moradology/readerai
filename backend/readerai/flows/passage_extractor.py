@@ -295,7 +295,7 @@ if __name__ == "__main__":
                 max_bootstrapped_demos=2,
             )
             optimized_extractor = compflow_optimizer.compile(
-                student=extractor_flow, trainset=examples_with_inputs, max_iters=1
+                student=extractor_flow, trainset=examples_with_inputs
             )
 
             print("\n--- Optimized Model Test Run ---")

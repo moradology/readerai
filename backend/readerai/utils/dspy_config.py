@@ -3,13 +3,12 @@ DSPy Configuration Utility
 """
 
 import os
-from typing import Optional
 
 import dspy
 from dotenv import load_dotenv
 
 
-def configure_dspy(model_name: Optional[str] = None):
+def configure_dspy(model_name: str | None = None):
     """
     Configure DSPy with the specified model using the API key from environment variables.
 
