@@ -3,11 +3,10 @@ CLI tool to display current configuration
 """
 
 import typer
+from readerai.config import get_settings
 from rich.console import Console
 from rich.table import Table
 from rich.tree import Tree
-
-from readerai.config import get_settings
 
 app = typer.Typer()
 console = Console()

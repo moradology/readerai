@@ -14,7 +14,6 @@ from fastapi import (  # Added WebSocket imports
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
-
 from readerai.config import get_settings
 from readerai.constants import TEST_PASSAGE  # Import passage from constants
 from readerai.flows.response import (
@@ -247,8 +246,12 @@ async def websocket_endpoint(websocket: WebSocket):
                         word_asked=last_word,
                         student_answer=user_message,
                     )
-                    ai_response_text = assessment_result.get(
-                        "assessment_feedback", "Assessment failed."
+                    ai_response_text = (
+                        assessment_result.get(
+                            "assessment_feedback", "Assessment failed."
+                        )
+                        if assessment_result
+                        else "Assessment failed."
                     )
                     response_payload = {"type": "chat", "payload": ai_response_text}
 

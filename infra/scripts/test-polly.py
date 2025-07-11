@@ -12,7 +12,7 @@ import boto3
 
 class PollyTester:
     def __init__(
-        self, bucket_name: str, region: str = "us-east-1", profile: str = None
+        self, bucket_name: str, region: str = "us-east-1", profile: str | None = None
     ):
         if profile:
             session = boto3.Session(profile_name=profile)
@@ -87,6 +87,11 @@ def main():
 
     # Get bucket name from environment or use default
     import os
+
+    # Add backend to path for imports
+    import sys
+
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../backend"))
 
     bucket_name = os.getenv("AWS_AUDIO_CACHE_BUCKET", "readerai-audio-cache-dev")
     profile = os.getenv("AWS_PROFILE")

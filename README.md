@@ -11,7 +11,7 @@ ReaderAI follows a unique development methodology that combines traditional soft
 3. **AI-Assisted Implementation**: Features are implemented using structured prompts that guide development
 4. **Comprehensive Testing**: Rigorous testing ensures reliability across different scenarios
 
-For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.md).
+For more details on our development process, see [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md).
 
 ## ✨ Key Features
 
@@ -25,9 +25,9 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Python 3.13, FastAPI, DSPy (LLM framework)
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Chakra UI
-- **Infrastructure**: Docker, Caddy (reverse proxy with automatic HTTPS)
+- **Backend**: Python 3.13, FastAPI, DSPy (LLM framework), AWS Polly (TTS)
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Redux Toolkit
+- **Infrastructure**: Docker, Caddy (reverse proxy with automatic HTTPS), AWS S3
 - **Testing**: Pytest, Jest, Integration tests with httpx
 - **Development**: uv (package management), pre-commit hooks, hot reload support
 
@@ -52,6 +52,9 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
 2.  **Set Python Version and Install Dependencies:**
 
     ```bash
+    # Navigate to backend directory
+    cd backend
+
     # Ensure Python 3.13 is used
     uv python pin 3.13
 
@@ -63,23 +66,24 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
 
     ```bash
     # Install dev tools like ipython and pre-commit
-    uv sync --group dev
+    cd backend && uv sync --group dev
     ```
 
     To add a new dependency:
 
     ```bash
     # Add to main dependencies
-    uv add <package-name>
+    cd backend && uv add <package-name>
 
     # Add to dev dependencies
-    uv add --group dev <package-name>
+    cd backend && uv add --group dev <package-name>
     ```
 
 4.  **Configure Environment Variables:**
 
 - Create a `.env` file from `.env.example`:
   ```bash
+  cd backend
   cp .env.example .env
   ```
 - Configure your settings:
@@ -98,13 +102,14 @@ For more details on our development process, see [CONTRIBUTING.md](CONTRIBUTING.
 1.  **Start the FastAPI Server:**
 
     ```bash
+    cd backend
     uv run uvicorn main:app --reload
     ```
 
 2.  **In a separate terminal, start the frontend:**
 
     ```bash
-    cd frontend
+    cd rtk-frontend
     npm install
     npm run dev
     ```
@@ -122,6 +127,7 @@ ReaderAI includes a complete Docker setup for easy deployment with HTTPS support
 
 ```bash
 # First time setup
+cd backend
 cp .env.example .env
 # Edit .env with your API keys
 
@@ -153,10 +159,10 @@ The project uses Docker Compose with an override pattern:
 
 ```bash
 # Development (default - uses override file automatically)
-docker compose up --build
+cd backend && docker compose up --build
 
 # Production (explicitly skip override file)
-docker compose --no-override up --build
+cd backend && docker compose --no-override up --build
 
 # Run in background
 docker compose up -d
@@ -271,7 +277,7 @@ Model recommendations:
 
 We welcome contributions to ReaderAI! Whether you're interested in fixing bugs, adding new features, or improving documentation, your help is appreciated.
 
-Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide to learn about:
+Please read our [backend/CONTRIBUTING.md](backend/CONTRIBUTING.md) guide to learn about:
 
 - Our feature development process
 - Coding standards
@@ -287,26 +293,26 @@ We use pre-commit hooks to maintain code quality:
 
 ```bash
 # Install pre-commit (included in dev dependencies)
-uv sync --group dev
+cd backend && uv sync --group dev
 
 # Set up git hooks
-uv run pre-commit install
+cd backend && uv run pre-commit install
 
 # Run manually on all files
-uv run pre-commit run --all-files
+cd backend && uv run pre-commit run --all-files
 ```
 
 #### Running Tests
 
 ```bash
 # Run unit tests
-uv run pytest tests/
+cd backend && uv run pytest tests/
 
 # Run with coverage
-uv run pytest --cov=readerai tests/
+cd backend && uv run pytest --cov=readerai tests/
 
 # Run integration tests (requires Docker services running)
-cd integration-tests
+cd backend/integration-tests
 ./run_tests.sh
 ```
 
@@ -314,13 +320,13 @@ cd integration-tests
 
 ```bash
 # Format code
-uv run black readerai/
+cd backend && uv run black readerai/
 
 # Type checking
-uv run mypy readerai/
+cd backend && uv run mypy readerai/
 
 # Update all dependencies
-uv lock --upgrade
+cd backend && uv lock --upgrade
 ```
 
 ## 🧪 Testing
@@ -331,31 +337,37 @@ ReaderAI includes comprehensive testing:
 - **Integration Tests**: Test the full stack (Frontend → Caddy → Backend)
 - **E2E Tests**: Test complete user workflows
 
-See [integration-tests/README.md](integration-tests/README.md) for details on running integration tests.
+See [backend/integration-tests/README.md](backend/integration-tests/README.md) for details on running integration tests.
 
 ## 🚀 Deployment
 
 For production deployment:
 
-1. Set proper environment variables in `.env`
-2. Use the production Docker script: `./scripts/build_and_run_prod.sh`
-3. Configure your domain in `Caddyfile` for automatic HTTPS
-4. Consider using a reverse proxy or load balancer for scaling
+1. Set proper environment variables in `backend/.env`
+2. Use the production Docker script: `cd backend && ./scripts/build_and_run_prod.sh`
+3. Configure your domain in `backend/Caddyfile` for automatic HTTPS
+4. Set up AWS infrastructure with Terraform (see `infra/terraform/`)
+5. Consider using a reverse proxy or load balancer for scaling
 
 ## 📚 Project Structure
 
 ```
 readerai/
-├── readerai/          # Core Python package
-│   ├── flows/         # LLM interaction flows
-│   ├── utils/         # Utility functions
-│   └── cli/           # Command-line tools
-├── frontend/          # React TypeScript frontend
-├── tests/             # Unit tests
-├── integration-tests/ # Full-stack integration tests
-├── scripts/           # Build and deployment scripts
-├── docker-compose.yml # Production Docker config
-├── docker-compose.override.yml # Development overrides
+├── backend/           # Python backend
+│   ├── readerai/      # Core Python package
+│   │   ├── flows/     # LLM interaction flows
+│   │   ├── utils/     # Utility functions
+│   │   ├── cli/       # Command-line tools
+│   │   └── tts/       # Text-to-speech integration
+│   ├── tests/         # Unit tests
+│   ├── integration-tests/ # Full-stack integration tests
+│   ├── scripts/       # Build and deployment scripts
+│   ├── docker-compose.yml # Production Docker config
+│   ├── docker-compose.override.yml # Development overrides
+│   └── main.py        # FastAPI application
+├── rtk-frontend/      # React TypeScript frontend
+├── infra/             # Infrastructure (Terraform, AWS)
+├── docs/              # Architecture documentation
 └── Caddyfile         # Reverse proxy configuration
 ```
 
@@ -367,6 +379,7 @@ readerai/
 
 ```bash
 # If you see "incompatible with project's Python requirement"
+cd backend
 uv python pin 3.13
 uv sync
 ```

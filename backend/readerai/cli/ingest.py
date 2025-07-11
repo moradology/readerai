@@ -6,15 +6,14 @@ import asyncio
 import hashlib
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import aioboto3
 import typer
 from pydantic import BaseModel
+from readerai.config import get_settings
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
-
-from readerai.config import get_settings
 
 app = typer.Typer()
 console = Console()
@@ -36,7 +35,7 @@ class StoryMetadata(BaseModel):
     title: str
     slug: str
     total_words: int
-    chunks: list[dict[str, any]]
+    chunks: list[dict[str, Any]]
     voice_id: str
     grade_level: Optional[int] = None
     tags: Optional[list[str]] = None
@@ -54,8 +53,8 @@ def create_chunks(text: str, target_words: Optional[int] = None) -> list[Chunk]:
         target_words = settings.audio.chunk_target_words
 
     paragraphs = text.strip().split("\n\n")
-    chunks = []
-    current_chunk = []
+    chunks: list[Chunk] = []
+    current_chunk: list[str] = []
     current_word_count = 0
     total_word_index = 0
 
@@ -110,7 +109,7 @@ async def synthesize_chunk(
     story_slug: str,
     voice_id: str,
     bucket_name: str,
-) -> dict[str, any]:
+) -> dict[str, Any]:
     """Synthesize and upload a single chunk"""
     async with session.client("polly") as polly, session.client("s3") as s3:
         # Generate audio
@@ -228,7 +227,7 @@ async def process_story(
     else:
         session = aioboto3.Session()
 
-    chunk_metadata = []
+    chunk_metadata: list[dict[str, Any]] = []
 
     with Progress(
         SpinnerColumn(),
