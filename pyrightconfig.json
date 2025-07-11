@@ -1,24 +1,16 @@
 {
-  "include": ["."],
+  "include": ["backend"],
   "exclude": [
     "**/__pycache__",
     "**/.venv",
     "**/node_modules",
-    "integration-tests"
+    "backend/integration-tests"
   ],
-  "venvPath": ".",
+  "venvPath": "backend",
   "venv": ".venv",
   "pythonVersion": "3.13",
   "typeCheckingMode": "standard",
   "useLibraryCodeForTypes": true,
-  "executionEnvironments": [
-    {
-      "root": ".",
-      "pythonVersion": "3.13",
-      "extraPaths": ["."]
-    }
-  ],
-  "reportPrivateImportUsage": false,
   "reportMissingImports": false,
   "reportMissingTypeStubs": false,
   "reportGeneralTypeIssues": true,
