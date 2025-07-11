@@ -152,22 +152,26 @@ async def websocket_endpoint(websocket: WebSocket):
             print(
                 f"WS {websocket.client}: Stored initial question state: Word='{client_state['last_word']}'"
             )
-            initial_data_payload["question"] = question_data.get("question")
+            initial_data_payload["question"] = question_data.get("question", "")
             initial_data_payload["feedback"] = question_data.get(
-                "feedback"
+                "feedback", ""
             )  # Optional: maybe send later
             initial_data_payload["usage_sentences"] = question_data.get(
-                "usage_sentences"
+                "usage_sentences", []
             )
         else:
             print(
                 f"WS {websocket.client}: Initial question not viable or error generating."
             )
-            initial_data_payload["question"] = question_data.get(
-                "question", "Error generating initial question."
+            initial_data_payload["question"] = (
+                question_data.get("question", "Error generating initial question.")
+                if question_data
+                else "Error generating initial question."
             )
-            initial_data_payload["feedback"] = question_data.get(
-                "feedback", "Check server logs."
+            initial_data_payload["feedback"] = (
+                question_data.get("feedback", "Check server logs.")
+                if question_data
+                else "Check server logs."
             )
             # No state to store
     else:
