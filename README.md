@@ -109,7 +109,7 @@ For more details on our development process, see [backend/CONTRIBUTING.md](backe
 2.  **In a separate terminal, start the frontend:**
 
     ```bash
-    cd rtk-frontend
+    cd frontend
     npm install
     npm run dev
     ```
@@ -365,7 +365,7 @@ readerai/
 │   ├── docker-compose.yml # Production Docker config
 │   ├── docker-compose.override.yml # Development overrides
 │   └── main.py        # FastAPI application
-├── rtk-frontend/      # React TypeScript frontend
+├── frontend/          # React TypeScript frontend
 ├── infra/             # Infrastructure (Terraform, AWS)
 ├── docs/              # Architecture documentation
 └── Caddyfile         # Reverse proxy configuration

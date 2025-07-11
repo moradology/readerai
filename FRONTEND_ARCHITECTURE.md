@@ -122,7 +122,7 @@ UI Components → Hooks → Redux/RTK Query → Services → Providers → Exter
 ## Project Structure
 
 ```
-rtk-frontend/
+frontend/
 ├── src/
 │   ├── app/                              # Application core
 │   │   ├── store.ts                      # Redux store configuration

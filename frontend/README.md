@@ -274,7 +274,7 @@ cd /path/to/readerai
 python main.py  # Runs on port 8000
 
 # Terminal 2: Start React frontend
-cd /path/to/readerai/rtk-frontend
+cd /path/to/readerai/frontend
 npm run dev     # Runs on port 3001 with proxy to 8000
 ```
 
