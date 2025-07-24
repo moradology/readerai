@@ -9,14 +9,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class DatabaseSettings(BaseSettings):
     """Database configuration"""
 
-    # SQLite by default for development
     url: str = Field(
         default="sqlite:///./readerai.db",
-        description="Database URL",
+        description="Database URL (can include pool params: postgresql://...?pool_size=20)",
     )
-    echo: bool = Field(default=False, description="Echo SQL statements")
-    pool_size: int = Field(default=10, description="Connection pool size")
-    max_overflow: int = Field(default=20, description="Max overflow connections")
 
     # Redis configuration (for future caching/session management)
     redis_url: str | None = Field(
