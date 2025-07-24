@@ -170,28 +170,37 @@ class TTSService:
         # Upload objects
         async with self.session.client("s3") as s3:  # type: ignore
             async with anyio.create_task_group() as tg:
-                tg.start_soon(
-                    s3.put_object,
-                    Bucket=bucket,
-                    Key=audio_key,
-                    Body=audio_bytes,
-                    ContentType="audio/mpeg",
-                    StorageClass="ONEZONE_IA",
-                )
-                tg.start_soon(
-                    s3.put_object,
-                    Bucket=bucket,
-                    Key=text_key,
-                    Body=json.dumps({"text": request.text}, indent=2),
-                    ContentType="application/json",
-                )
-                tg.start_soon(
-                    s3.put_object,
-                    Bucket=bucket,
-                    Key=timings_key,
-                    Body=json.dumps([t.model_dump() for t in timing_objs], indent=2),
-                    ContentType="application/json",
-                )
+
+                async def upload_audio():
+                    await s3.put_object(
+                        Bucket=bucket,
+                        Key=audio_key,
+                        Body=audio_bytes,
+                        ContentType="audio/mpeg",
+                        StorageClass="ONEZONE_IA",
+                    )
+
+                async def upload_text():
+                    await s3.put_object(
+                        Bucket=bucket,
+                        Key=text_key,
+                        Body=json.dumps({"text": request.text}, indent=2),
+                        ContentType="application/json",
+                    )
+
+                async def upload_timings():
+                    await s3.put_object(
+                        Bucket=bucket,
+                        Key=timings_key,
+                        Body=json.dumps(
+                            [t.model_dump() for t in timing_objs], indent=2
+                        ),
+                        ContentType="application/json",
+                    )
+
+                tg.start_soon(upload_audio)
+                tg.start_soon(upload_text)
+                tg.start_soon(upload_timings)
 
             # Get presigned URLs
             presigned_audio: str = ""
