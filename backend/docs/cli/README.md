@@ -39,10 +39,11 @@ readerai [OPTIONS] COMMAND [ARGS]...
 
 - **[infra](infra.md)** - Infrastructure management
   - `status` - Check infrastructure deployment status
-  - `deploy` - Deploy infrastructure with Terraform
-  - `destroy` - Tear down infrastructure
   - `init` - Initialize Terraform
   - `plan` - Preview infrastructure changes
+  - `apply` - Apply infrastructure changes
+  - `destroy` - Tear down infrastructure
+  - `validate` - Validate Terraform configuration
 
 - **[show-config](show-config.md)** - Display current configuration
   - Shows AWS, server, and LLM settings

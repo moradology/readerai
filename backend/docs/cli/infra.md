@@ -162,41 +162,56 @@ Terraform will perform the following actions:
 
 Plan: 12 to add, 0 to change, 0 to destroy.
 
-💡 Review the changes above. Run 'readerai infra deploy' to apply them.
+💡 Review the changes above. Run 'readerai infra apply' to apply them.
 ```
 
-### `readerai infra deploy`
+### `readerai infra apply`
 
-Deploy or update the infrastructure.
+Apply infrastructure changes (standard Terraform command).
 
 #### Usage
 
 ```bash
-readerai infra deploy [OPTIONS]
+readerai infra apply [OPTIONS]
 ```
 
 #### Options
 
+- `--plan, -p` - Apply a specific plan file
 - `--auto-approve` - Skip confirmation prompt (use with caution)
+- `--env, -e` - Environment (dev/staging/prod)
 
 #### Examples
 
-Interactive deployment:
+Interactive apply:
 
 ```bash
-readerai infra deploy
+readerai infra apply
 ```
 
-Auto-approved deployment (CI/CD):
+Apply from plan file:
 
 ```bash
-readerai infra deploy --auto-approve
+readerai infra plan -o myplan
+readerai infra apply --plan myplan
+```
+
+Auto-approved apply:
+
+```bash
+readerai infra apply --auto-approve
+```
+
+Direct apply with environment:
+
+```bash
+readerai infra apply --env production
 ```
 
 Output example:
 
 ```
-🚀 Deploying infrastructure...
+🚀 Applying infrastructure changes...
 
 Do you want to perform these actions?
   Terraform will perform the actions described above.
@@ -224,7 +239,7 @@ audio_bucket_name = "readerai-audio-cache-prod"
 cloudfront_domain = "d1234567890.cloudfront.net"
 api_gateway_url = "https://api-id.execute-api.us-east-1.amazonaws.com/prod"
 
-✅ Infrastructure deployed successfully!
+✅ Infrastructure applied successfully!
 
 Important endpoints:
 - Audio CDN: https://d1234567890.cloudfront.net
@@ -363,11 +378,11 @@ Use Terraform workspaces for multiple environments:
 ```bash
 # Development environment
 terraform workspace new dev
-readerai infra deploy
+readerai infra apply
 
 # Production environment
 terraform workspace new prod
-readerai infra deploy
+readerai infra apply
 
 # Switch between environments
 terraform workspace select dev
@@ -483,12 +498,12 @@ terraform {
 
 ## Best Practices
 
-1. **Always Plan Before Deploy**
+1. **Always Plan Before Apply**
 
    ```bash
    readerai infra plan
    # Review carefully
-   readerai infra deploy
+   readerai infra apply
    ```
 
 2. **Use Workspaces for Environments**
@@ -551,12 +566,12 @@ aws s3 ls s3://$BUCKET
 GitLab CI example:
 
 ```yaml
-deploy-infrastructure:
+apply-infrastructure:
   stage: deploy
   script:
     - readerai infra init
     - readerai infra plan
-    - readerai infra deploy --auto-approve
+    - readerai infra apply --auto-approve
   only:
     - main
   environment:
@@ -580,7 +595,7 @@ deploy-infrastructure:
    # Destroy and recreate
    readerai infra destroy
    readerai infra init
-   readerai infra deploy
+   readerai infra apply
    ```
 
 ### Recovery Procedures
