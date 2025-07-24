@@ -1,0 +1,39 @@
+# ReaderAI Configuration Example
+# Generated from Pydantic Settings schema
+#
+# This file shows all available configuration options with their default values.
+# Copy this file and modify as needed for your environment.
+
+aws:
+  region: us-east-1
+  audio_cache_bucket: readerai-audio-cache-dev
+  profile: ""
+server:
+  host: 0.0.0.0
+  port: 8000
+database:
+  url: sqlite:///./readerai.db
+  redis_url: ""
+llm:
+  providers:
+    openai:
+      name: openai
+      api_base: https://api.openai.com/v1
+      models:
+        - gpt-4
+        - gpt-4-turbo
+        - gpt-3.5-turbo
+    anthropic:
+      # api_key: sk-ant-...  # Or use ANTHROPIC_API_KEY env var
+      name: anthropic
+      api_base: https://api.anthropic.com/v1
+      models:
+        - claude-3-opus
+        - claude-3-sonnet
+        - claude-3-haiku
+  # Model assignments for different roles
+  # Format must be "provider:model" - provider is always required
+  models:
+    comprehension: openai:gpt-4 # Generate comprehension questions
+    vocabulary: openai:gpt-3.5-turbo # Explain vocabulary
+    assessment: openai:gpt-4 # Evaluate student answers
