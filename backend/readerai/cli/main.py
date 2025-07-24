@@ -5,12 +5,12 @@ Main CLI entry point for ReaderAI
 import typer
 
 from readerai.cli import (
+    config,
     extract_passages,
     infra,
     ingest,
     run_comprehension,
     run_vocabulary,
-    show_config,
     tts,
 )
 
@@ -24,17 +24,7 @@ app = typer.Typer(
 app.add_typer(ingest.app, name="ingest", help="Ingest stories and generate audio")
 app.add_typer(infra.app, name="infra", help="Manage infrastructure deployment")
 app.add_typer(tts.app, name="tts", help="Text-to-speech synthesis and caching")
-
-
-# For config, we'll use the direct command instead of the typer app
-@app.command("config")
-def config_command(
-    section: str = typer.Argument(
-        None, help="Specific section to show (aws, server, llm, audio, db)"
-    ),
-):
-    """Display configuration settings"""
-    show_config.show(section)
+app.add_typer(config.app, name="config", help="Configuration management")
 
 
 # Add single commands as subcommands
