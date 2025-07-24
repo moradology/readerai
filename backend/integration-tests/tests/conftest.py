@@ -59,3 +59,9 @@ def api_headers() -> dict[str, str]:
         "Content-Type": "application/json",
         "Accept": "application/json",
     }
+
+
+@pytest.fixture
+def anyio_backend():
+    """Configure anyio to use asyncio backend for tests"""
+    return "asyncio"

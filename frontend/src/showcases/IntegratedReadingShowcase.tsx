@@ -26,7 +26,6 @@ export function IntegratedReadingShowcase(): React.JSX.Element {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [volume, setVolume] = useState(1);
   const [isBuffering, setIsBuffering] = useState(false);
-  const [streamProgress, setStreamProgress] = useState(0);
 
   // Service instances
   const streamingService = useRef<RealAudioDemoService | null>(null);
@@ -269,7 +268,7 @@ export function IntegratedReadingShowcase(): React.JSX.Element {
   };
 
   // Handle word click in ReadingView
-  const handleWordClick = (wordIndex: number, startTime: number) => {
+  const handleWordClick = (_wordIndex: number, startTime: number) => {
     // startTime is already in seconds from ReadingView
     handleSeek(startTime);
   };

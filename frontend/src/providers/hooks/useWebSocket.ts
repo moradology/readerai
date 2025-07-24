@@ -71,7 +71,6 @@ export function useWebSocket(): UseWebSocketReturn {
         dispatch(websocketActions.error({
           code: 'CONNECTION_ERROR',
           message: error.message,
-          timestamp: Date.now(),
         }));
       });
 

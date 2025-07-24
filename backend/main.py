@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
+from readerai.api.tts import router as tts_router
 from readerai.config import get_settings
 from readerai.constants import TEST_PASSAGE  # Import passage from constants
 from readerai.flows.response import (
@@ -28,16 +29,17 @@ settings = get_settings()
 
 # --- DSPy Configuration ---
 try:
-    # Try LLM_API_KEY first (from our config), fall back to GOOGLE_API_KEY
-    api_key = settings.llm.api_key or os.getenv("GOOGLE_API_KEY")
+    # Try LLM_API_KEY first (from our config), fall back to provider-specific env vars
+    api_key = (
+        settings.llm.api_key
+        or os.getenv("OPENAI_API_KEY")
+        or os.getenv("GOOGLE_API_KEY")
+    )
     if not api_key:
         raise ValueError("LLM API key not found in environment variables.")
 
-    llm_model_name = settings.llm.model
-    if settings.llm.provider == "openai":
-        llm_model_name = f"openai/{llm_model_name}"
-    elif settings.llm.provider == "google":
-        llm_model_name = f"gemini/{llm_model_name}"
+    # Default to GPT-4 - can be overridden via environment
+    llm_model_name = os.getenv("LLM_MODEL", "openai/gpt-4")
 
     llm = dspy.LM(llm_model_name, api_key=api_key)
     dspy.settings.configure(lm=llm)
@@ -126,6 +128,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include TTS routes
+app.include_router(tts_router)
 
 # --- WebSocket Endpoint ---
 
@@ -456,5 +461,5 @@ if __name__ == "__main__":
         "main:app",
         host=settings.server.host,
         port=settings.server.port,
-        reload=settings.server.debug,
+        reload=(settings.server.environment == "development"),
     )

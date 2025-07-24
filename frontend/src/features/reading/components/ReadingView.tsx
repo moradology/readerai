@@ -52,7 +52,7 @@ export const ReadingView: React.FC<ReadingViewProps> = ({
     return paragraphTexts.map((paragraphText) => {
       // Check if paragraph starts with spaces (indentation)
       const indentMatch = paragraphText.match(/^(\s+)/);
-      const indent = indentMatch ? indentMatch[1].length : 0;
+      const indent = indentMatch?.[1]?.length ?? 0;
 
       // Remove leading spaces for word processing
       const trimmedText = paragraphText.trim();
@@ -81,7 +81,7 @@ export const ReadingView: React.FC<ReadingViewProps> = ({
 
     for (let i = 0; i < wordTimings.length; i++) {
       const timing = wordTimings[i];
-      if (timing.start >= 0 && currentTime >= timing.start && currentTime < timing.end) {
+      if (timing && timing.start >= 0 && currentTime >= timing.start && currentTime < timing.end) {
         return i;
       }
     }
@@ -89,7 +89,7 @@ export const ReadingView: React.FC<ReadingViewProps> = ({
     // If we're past all words, return the last word
     if (currentTime > 0 && wordTimings.length > 0) {
       const lastTiming = wordTimings[wordTimings.length - 1];
-      if (lastTiming && currentTime >= lastTiming.end) {
+      if (lastTiming && lastTiming.end !== undefined && currentTime >= lastTiming.end) {
         return wordTimings.length - 1;
       }
     }

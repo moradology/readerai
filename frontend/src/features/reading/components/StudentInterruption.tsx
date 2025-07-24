@@ -171,7 +171,7 @@ export function StudentInterruption({
 
               {interruption.pausedAtWordIndex !== undefined && (
                 <button
-                  onClick={() => onRepeat(Math.max(0, interruption.pausedAtWordIndex - 10))}
+                  onClick={() => onRepeat(Math.max(0, (interruption.pausedAtWordIndex ?? 0) - 10))}
                   className="px-6 py-3 bg-blue-600 text-white rounded-lg
                            hover:bg-blue-700 transition-colors font-medium"
                 >

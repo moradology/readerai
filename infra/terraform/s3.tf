@@ -1,4 +1,8 @@
 # S3 Bucket for Audio Cache
+# Stores three components per reading session:
+# 1. audio.mp3 - The synthesized speech from Polly
+# 2. text.json - Original text content
+# 3. timings.json - Word-level timing information for synchronization
 resource "aws_s3_bucket" "audio_cache" {
   bucket = "${var.project_name}-audio-cache-${var.environment}"
 
@@ -6,7 +10,7 @@ resource "aws_s3_bucket" "audio_cache" {
     Name        = "${var.project_name}-audio-cache-${var.environment}"
     Environment = var.environment
     Project     = var.project_name
-    Purpose     = "Polly audio cache"
+    Purpose     = "Polly audio cache with text and timings"
   }
 }
 
@@ -40,6 +44,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "audio_cache" {
     id     = "delete-old-audio"
     status = "Enabled"
 
+    # Filter applies to all objects
+    filter {}
+
     # Delete files not accessed for 90 days
     transition {
       days          = 30
@@ -52,32 +59,14 @@ resource "aws_s3_bucket_lifecycle_configuration" "audio_cache" {
   }
 }
 
-# Public access block
+# Block all public access - we'll use presigned URLs instead
 resource "aws_s3_bucket_public_access_block" "audio_cache" {
   bucket = aws_s3_bucket.audio_cache.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
-}
-
-# Bucket policy for public read access to audio files
-resource "aws_s3_bucket_policy" "audio_cache" {
-  bucket = aws_s3_bucket.audio_cache.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "PublicReadGetObject"
-        Effect = "Allow"
-        Principal = "*"
-        Action   = "s3:GetObject"
-        Resource = "${aws_s3_bucket.audio_cache.arn}/polly/*"
-      }
-    ]
-  })
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 # Output the bucket name

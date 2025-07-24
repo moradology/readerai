@@ -250,7 +250,7 @@ def status():
 
     table.add_row("AWS Region", settings.aws.region)
     table.add_row("Audio Cache Bucket", settings.aws.audio_cache_bucket)
-    table.add_row("Polly Voice", settings.aws.polly_voice_id)
+    # Polly voice is now a parameter, not config
 
     console.print(table)
     console.print()

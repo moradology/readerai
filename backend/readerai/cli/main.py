@@ -11,6 +11,7 @@ from readerai.cli import (
     run_comprehension,
     run_vocabulary,
     show_config,
+    tts,
 )
 
 app = typer.Typer(
@@ -22,6 +23,7 @@ app = typer.Typer(
 # Add subcommands
 app.add_typer(ingest.app, name="ingest", help="Ingest stories and generate audio")
 app.add_typer(infra.app, name="infra", help="Manage infrastructure deployment")
+app.add_typer(tts.app, name="tts", help="Text-to-speech synthesis and caching")
 
 
 # For config, we'll use the direct command instead of the typer app

@@ -63,7 +63,7 @@ export const ReadingViewShowcase: React.FC = () => {
     { word: "current.", start: 18.3, end: 19.0 },
   ];
 
-  const maxTime = wordTimings[wordTimings.length - 1].end;
+  const maxTime = wordTimings[wordTimings.length - 1]?.end ?? 0;
 
   // Simulate playback
   useEffect(() => {

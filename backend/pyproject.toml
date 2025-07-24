@@ -8,6 +8,7 @@ dependencies = [
     "aioboto3>=15.0.0",
     "dspy>=2.6.27",
     "fastapi>=0.116.0",
+    "httpx>=0.28.1",
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.1",
     "pytest>=8.4.1",
@@ -30,6 +31,10 @@ dev = [
     "ipython>=9.4.0",
     "pytest>=8.4.1",
     "pre-commit>=4.2.0",
+    "aiohttp>=3.12.13",
+    "anyio[trio]>=4.0.0",
+    "pytest-anyio>=0.0.0",
+    "mutagen>=1.47.0",
 ]
 
 [project.scripts]
@@ -59,6 +64,23 @@ ignore_missing_imports = true  # Enable this to stop complaints about missing im
 [[tool.mypy.overrides]]
 module = "tests.*"
 ignore_errors = true  # Ignore errors in test files initially
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--asyncio-mode=auto",
+]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "audio: marks tests that play audio (run with 'pytest -m audio --play-audio')",
+]
 
 [tool.ruff]
 line-length = 88

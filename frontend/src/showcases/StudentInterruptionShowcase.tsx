@@ -67,7 +67,6 @@ export function StudentInterruptionShowcase(): React.JSX.Element {
     askQuestion,
     resumeReading,
     repeatAudio,
-    clearInterruption,
   } = useStudentInterruption({
     audioPlayer: mockAudioPlayer as any,
     currentWordIndex,

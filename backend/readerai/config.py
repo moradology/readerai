@@ -1,27 +1,33 @@
 """
 Application configuration using pydantic-settings
+
+Minimal configuration - only what truly needs to be configured.
+Everything else should be a parameter.
 """
+
+from enum import Enum
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class Environment(str, Enum):
+    """Application environments"""
+
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
+
+
 class AWSSettings(BaseSettings):
-    """AWS-related configuration"""
+    """AWS configuration - only what's environment-specific"""
 
     region: str = Field(default="us-east-1", description="AWS region")
     audio_cache_bucket: str = Field(
         default="readerai-audio-cache-dev", description="S3 bucket for audio cache"
     )
-
-    # Polly settings
-    polly_voice_id: str = Field(default="Joanna", description="Default Polly voice")
-    polly_engine: str = Field(default="standard", description="Polly engine type")
-
-    # AWS credentials options
-    profile: str | None = Field(default=None, description="AWS profile name")
-    aws_access_key_id: str | None = Field(default=None, description="AWS access key")
-    aws_secret_access_key: str | None = Field(default=None, description="AWS secret")
+    # AWS credentials - rely on standard AWS credential chain
+    profile: str | None = Field(default=None, description="AWS profile name (optional)")
 
     model_config = SettingsConfigDict(env_prefix="AWS_")
 
@@ -29,12 +35,14 @@ class AWSSettings(BaseSettings):
 class ServerSettings(BaseSettings):
     """Server configuration"""
 
-    host: str = Field(default="0.0.0.0", description="Server host")  # nosec B104
+    host: str = Field(
+        default="0.0.0.0",  # nosec B104
+        description="Server host",
+    )
     port: int = Field(default=8000, description="Server port")
-    environment: str = Field(default="development", description="Environment name")
-    debug: bool = Field(default=True, description="Debug mode")
-
-    # CORS settings
+    environment: Environment = Field(
+        default=Environment.DEVELOPMENT, description="Environment name"
+    )
     cors_origins: list[str] = Field(
         default=["http://localhost:3000", "http://localhost:5173"],
         description="Allowed CORS origins",
@@ -44,51 +52,23 @@ class ServerSettings(BaseSettings):
 
 
 class LLMSettings(BaseSettings):
-    """LLM configuration"""
+    """LLM configuration - only API key which is environment-specific"""
 
-    provider: str = Field(default="openai", description="LLM provider")
-    model: str = Field(default="gpt-4", description="Model name")
-    api_key: str | None = Field(default=None, description="API key")
-    temperature: float = Field(default=0.7, description="Temperature")
-    max_tokens: int = Field(default=1000, description="Max tokens")
+    api_key: str | None = Field(
+        default=None,
+        description="API key (falls back to provider-specific env vars like OPENAI_API_KEY)",
+    )
 
     model_config = SettingsConfigDict(env_prefix="LLM_")
 
 
-class AudioSettings(BaseSettings):
-    """Audio processing configuration"""
-
-    chunk_target_words: int = Field(
-        default=400, description="Target words per audio chunk"
-    )
-    chunk_min_words: int = Field(default=200, description="Minimum words per chunk")
-    chunk_max_words: int = Field(default=800, description="Maximum words per chunk")
-
-    # Audio file settings
-    audio_format: str = Field(default="mp3", description="Audio output format")
-    audio_sample_rate: int = Field(default=22050, description="Sample rate")
-
-    model_config = SettingsConfigDict(env_prefix="AUDIO_")
-
-
-class DatabaseSettings(BaseSettings):
-    """Database configuration"""
-
-    url: str = Field(default="sqlite:///./readerai.db", description="Database URL")
-    echo: bool = Field(default=False, description="Echo SQL queries")
-
-    model_config = SettingsConfigDict(env_prefix="DB_")
-
-
 class Settings(BaseSettings):
-    """Main settings aggregator"""
+    """Main settings aggregator - minimal configuration"""
 
     # Sub-settings
     aws: AWSSettings = Field(default_factory=AWSSettings)
     server: ServerSettings = Field(default_factory=ServerSettings)
     llm: LLMSettings = Field(default_factory=LLMSettings)
-    audio: AudioSettings = Field(default_factory=AudioSettings)
-    db: DatabaseSettings = Field(default_factory=DatabaseSettings)
 
     # Root settings
     app_name: str = Field(default="ReaderAI", description="Application name")

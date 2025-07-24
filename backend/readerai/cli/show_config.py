@@ -16,7 +16,7 @@ console = Console()
 @app.command()
 def show(
     section: str = typer.Argument(
-        None, help="Specific section to show (aws, server, llm, audio, db)"
+        None, help="Specific section to show (aws, server, llm)"
     ),
 ):
     """Display current ReaderAI configuration"""
@@ -31,13 +31,9 @@ def show(
             show_server_config(settings)
         elif section_lower == "llm":
             show_llm_config(settings)
-        elif section_lower == "audio":
-            show_audio_config(settings)
-        elif section_lower == "db":
-            show_db_config(settings)
         else:
             console.print(f"[red]Unknown section: {section}[/red]")
-            console.print("Valid sections: aws, server, llm, audio, db")
+            console.print("Valid sections: aws, server, llm")
     else:
         # Show all configuration
         show_all_config(settings)
@@ -56,8 +52,6 @@ def show_all_config(settings):
     aws = tree.add("[cyan]AWS[/cyan]")
     aws.add(f"Region: {settings.aws.region}")
     aws.add(f"Audio Cache Bucket: {settings.aws.audio_cache_bucket}")
-    aws.add(f"Polly Voice: {settings.aws.polly_voice_id}")
-    aws.add(f"Polly Engine: {settings.aws.polly_engine}")
     if settings.aws.profile:
         aws.add(f"Profile: {settings.aws.profile}")
 
@@ -65,30 +59,14 @@ def show_all_config(settings):
     server = tree.add("[cyan]Server[/cyan]")
     server.add(f"Host: {settings.server.host}")
     server.add(f"Port: {settings.server.port}")
-    server.add(f"Environment: {settings.server.environment}")
-    server.add(f"Debug: {settings.server.debug}")
+    server.add(f"Environment: {settings.server.environment.value}")
     server.add(f"CORS Origins: {settings.server.cors_origins}")
 
     # LLM
     llm = tree.add("[cyan]LLM[/cyan]")
-    llm.add(f"Provider: {settings.llm.provider}")
-    llm.add(f"Model: {settings.llm.model}")
-    llm.add(f"Temperature: {settings.llm.temperature}")
-    llm.add(f"Max Tokens: {settings.llm.max_tokens}")
-    llm.add(f"API Key: {'✓ Set' if settings.llm.api_key else '✗ Not set'}")
-
-    # Audio
-    audio = tree.add("[cyan]Audio Processing[/cyan]")
-    audio.add(f"Chunk Target: {settings.audio.chunk_target_words} words")
-    audio.add(f"Chunk Min: {settings.audio.chunk_min_words} words")
-    audio.add(f"Chunk Max: {settings.audio.chunk_max_words} words")
-    audio.add(f"Format: {settings.audio.audio_format}")
-    audio.add(f"Sample Rate: {settings.audio.audio_sample_rate} Hz")
-
-    # Database
-    db = tree.add("[cyan]Database[/cyan]")
-    db.add(f"URL: {settings.db.url}")
-    db.add(f"Echo SQL: {settings.db.echo}")
+    llm.add(
+        f"API Key: {'✓ Set' if settings.llm.api_key else '✗ Not set (will use OPENAI_API_KEY or GOOGLE_API_KEY)'}"
+    )
 
     console.print(tree)
 
@@ -101,15 +79,7 @@ def show_aws_config(settings):
 
     table.add_row("Region", settings.aws.region)
     table.add_row("Audio Cache Bucket", settings.aws.audio_cache_bucket)
-    table.add_row("Polly Voice ID", settings.aws.polly_voice_id)
-    table.add_row("Polly Engine", settings.aws.polly_engine)
     table.add_row("Profile", settings.aws.profile or "Not set")
-    table.add_row(
-        "Access Key", "✓ Set" if settings.aws.aws_access_key_id else "✗ Not set"
-    )
-    table.add_row(
-        "Secret Key", "✓ Set" if settings.aws.aws_secret_access_key else "✗ Not set"
-    )
 
     console.print(table)
 
@@ -122,8 +92,7 @@ def show_server_config(settings):
 
     table.add_row("Host", settings.server.host)
     table.add_row("Port", str(settings.server.port))
-    table.add_row("Environment", settings.server.environment)
-    table.add_row("Debug Mode", str(settings.server.debug))
+    table.add_row("Environment", settings.server.environment.value)
     table.add_row("CORS Origins", str(settings.server.cors_origins))
 
     console.print(table)
@@ -135,37 +104,7 @@ def show_llm_config(settings):
     table.add_column("Setting", style="cyan")
     table.add_column("Value", style="green")
 
-    table.add_row("Provider", settings.llm.provider)
-    table.add_row("Model", settings.llm.model)
-    table.add_row("Temperature", str(settings.llm.temperature))
-    table.add_row("Max Tokens", str(settings.llm.max_tokens))
     table.add_row("API Key", "✓ Set" if settings.llm.api_key else "✗ Not set")
-
-    console.print(table)
-
-
-def show_audio_config(settings):
-    """Show audio configuration"""
-    table = Table(title="Audio Processing Configuration")
-    table.add_column("Setting", style="cyan")
-    table.add_column("Value", style="green")
-
-    table.add_row("Chunk Target Words", str(settings.audio.chunk_target_words))
-    table.add_row("Chunk Min Words", str(settings.audio.chunk_min_words))
-    table.add_row("Chunk Max Words", str(settings.audio.chunk_max_words))
-    table.add_row("Audio Format", settings.audio.audio_format)
-    table.add_row("Sample Rate", f"{settings.audio.audio_sample_rate} Hz")
-
-    console.print(table)
-
-
-def show_db_config(settings):
-    """Show database configuration"""
-    table = Table(title="Database Configuration")
-    table.add_column("Setting", style="cyan")
-    table.add_column("Value", style="green")
-
-    table.add_row("URL", settings.db.url)
-    table.add_row("Echo SQL", str(settings.db.echo))
+    table.add_row("Model", "Set via LLM_MODEL env var (default: openai/gpt-4)")
 
     console.print(table)

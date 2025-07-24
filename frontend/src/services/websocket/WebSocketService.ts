@@ -50,7 +50,7 @@ export class WebSocketService {
       reconnectInterval: config.reconnectInterval || 3000,
       maxReconnectAttempts: config.maxReconnectAttempts || 5,
       heartbeatInterval: config.heartbeatInterval || 30000,
-      protocols: config.protocols,
+      protocols: config.protocols ?? [],
     };
   }
 

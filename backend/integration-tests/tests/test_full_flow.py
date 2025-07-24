@@ -96,7 +96,7 @@ class TestFullUserFlow:
         finally:
             ws.close()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_mixed_protocol_session(
         self,
         base_url: str,

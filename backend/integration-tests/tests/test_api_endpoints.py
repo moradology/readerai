@@ -1,5 +1,6 @@
 """Test API endpoints through the full stack (Caddy -> Backend)."""
 
+import anyio
 import httpx
 import pytest
 
@@ -59,10 +60,9 @@ class TestAPIEndpoints:
         # Check for CORS headers if they're configured
         # assert "Access-Control-Allow-Origin" in response.headers
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_concurrent_requests(self, base_url: str, async_http_client: httpx.AsyncClient):
         """Test that the API can handle concurrent requests."""
-        import anyio
 
         async def make_health_request():
             return await async_http_client.get(f"{base_url}/health")

@@ -55,7 +55,8 @@ resource "aws_iam_role_policy" "s3_audio_cache_access" {
         Action = [
           "s3:GetObject",
           "s3:PutObject",
-          "s3:HeadObject"
+          "s3:HeadObject",
+          "s3:GetObjectAttributes"
         ]
         Resource = "${aws_s3_bucket.audio_cache.arn}/*"
       },

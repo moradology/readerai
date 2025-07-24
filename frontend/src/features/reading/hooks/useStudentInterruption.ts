@@ -9,7 +9,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@app/hooks';
+import { useAppSelector } from '@app/hooks';
 import { selectIsConnected } from '@features/websocket/websocketSlice';
 import { useWebSocket } from '@providers/hooks/useWebSocket';
 import type { AudioPlayerProvider } from '@providers/types';
@@ -51,9 +51,8 @@ export function useStudentInterruption({
   onInterruptionStart,
   onInterruptionEnd,
 }: UseStudentInterruptionOptions): UseStudentInterruptionReturn {
-  const dispatch = useAppDispatch();
   const isConnected = useAppSelector(selectIsConnected);
-  const { sendMessage, subscribe, unsubscribe } = useWebSocket();
+  const { sendMessage, subscribe } = useWebSocket();
 
   // Interruption state
   const [interruption, setInterruption] = useState<InterruptionState>({
@@ -89,11 +88,11 @@ export function useStudentInterruption({
 
     // Subscribe to relevant message types
     const unsubscribeFns = [
-      subscribe('INTERRUPTION_ACKNOWLEDGED', handleMessage),
-      subscribe('INTERRUPTION_RESPONSE', handleMessage),
-      subscribe('PAUSE_AUDIO', handleMessage),
-      subscribe('RESUME_AUDIO', handleMessage),
-      subscribe('INTERRUPTION_ERROR', handleMessage),
+      subscribe('INTERRUPTION_ACKNOWLEDGED', handleMessage as any),
+      subscribe('INTERRUPTION_RESPONSE', handleMessage as any),
+      subscribe('PAUSE_AUDIO', handleMessage as any),
+      subscribe('RESUME_AUDIO', handleMessage as any),
+      subscribe('INTERRUPTION_ERROR', handleMessage as any),
     ];
 
     return () => {
@@ -178,6 +177,14 @@ export function useStudentInterruption({
     onInterruptionStart,
   ]);
 
+  // Clear interruption state
+  const clearInterruption = useCallback(() => {
+    setInterruption({
+      isActive: false,
+      isProcessing: false,
+    });
+  }, []);
+
   // Resume reading
   const resumeReading = useCallback((understood = true, helpful?: boolean) => {
     if (!interruption.isActive) return;
@@ -197,12 +204,12 @@ export function useStudentInterruption({
       timestamp: Date.now(),
     });
 
-    // Clear interruption state
-    clearInterruption();
-
     // Notify parent component
     onInterruptionEnd?.();
-  }, [interruption, sendMessage, onInterruptionEnd]);
+
+    // Clear interruption state
+    clearInterruption();
+  }, [interruption, sendMessage, onInterruptionEnd, clearInterruption]);
 
   // Repeat audio from a specific point
   const repeatAudio = useCallback((fromWordIndex: number) => {
@@ -215,14 +222,6 @@ export function useStudentInterruption({
       timestamp: Date.now(),
     });
   }, [sendMessage]);
-
-  // Clear interruption state
-  const clearInterruption = useCallback(() => {
-    setInterruption({
-      isActive: false,
-      isProcessing: false,
-    });
-  }, []);
 
   return {
     interruption,

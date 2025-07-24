@@ -67,11 +67,15 @@ function getMockResponse(question: string): InterruptionResponseMessage['payload
   const responses = MOCK_RESPONSES[type];
   const response = responses[Math.floor(Math.random() * responses.length)];
 
+  if (!response) {
+    throw new Error('No response found');
+  }
+
   return {
     responseText: response.responseText,
-    responseType: response.responseType || (type === 'vocabulary' ? 'definition' : 'text'),
-    structuredData: response.structuredData,
-    suggestions: response.suggestions || [
+    responseType: 'responseType' in response ? response.responseType : (type === 'vocabulary' ? 'definition' : 'text'),
+    ...('structuredData' in response && response.structuredData ? { structuredData: response.structuredData } : {}),
+    suggestions: 'suggestions' in response && response.suggestions ? response.suggestions : [
       { text: '✓ Got it!', action: 'continue' },
       { text: '🔄 Read again', action: 'repeat' },
     ],

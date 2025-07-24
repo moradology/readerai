@@ -14,9 +14,6 @@ import type {
   ResumeAudioMessage,
 } from '@features/reading/websocket/types';
 
-// Create WebSocket link
-const chat = ws.link('ws://localhost:8000/ws');
-
 // Sample responses for different types of questions
 const VOCABULARY_RESPONSES = [
   {
@@ -43,7 +40,7 @@ function analyzeQuestion(question: string): { type: string; word?: string } {
 
   // Check for vocabulary questions
   const vocabMatch = lower.match(/what (?:does|is)(?: the word)? ['""]?(\w+)['""]? mean/);
-  if (vocabMatch) {
+  if (vocabMatch?.[1]) {
     return { type: 'vocabulary', word: vocabMatch[1] };
   }
 
@@ -59,7 +56,7 @@ function analyzeQuestion(question: string): { type: string; word?: string } {
 }
 
 export const websocketHandlers = [
-  chat.addEventListener('connection', ({ client }) => {
+  ws.link('ws://localhost:8000/ws').addEventListener('connection', ({ client }) => {
     // eslint-disable-next-line no-console
     console.log('[MSW WebSocket] Client connected');
 
@@ -68,49 +65,49 @@ export const websocketHandlers = [
       payload: { message: 'Connected to mock WebSocket server' },
       timestamp: Date.now(),
     }));
-  }),
 
-  chat.addEventListener('message', async ({ client, data }) => {
-    try {
-      const message = JSON.parse(data.toString());
-      // eslint-disable-next-line no-console
-      console.log('[MSW WebSocket] Received:', message.type);
+    client.addEventListener('message', async (event: MessageEvent) => {
+      try {
+        const message = JSON.parse(event.data.toString());
+        // eslint-disable-next-line no-console
+        console.log('[MSW WebSocket] Received:', message.type);
 
-      switch (message.type) {
-        case 'STUDENT_INTERRUPTION':
-          await handleStudentInterruption(client, message as StudentInterruptionMessage);
-          break;
+        switch (message.type) {
+          case 'STUDENT_INTERRUPTION':
+            await handleStudentInterruption(client, message as StudentInterruptionMessage);
+            break;
 
-        case 'RESUME_READING':
-          await handleResumeReading(client, message);
-          break;
+          case 'RESUME_READING':
+            await handleResumeReading(client, message);
+            break;
 
-        case 'REPEAT_AUDIO':
-          await handleRepeatAudio(client, message);
-          break;
+          case 'REPEAT_AUDIO':
+            await handleRepeatAudio(client, message);
+            break;
 
-        default:
-          // Echo unknown messages for debugging
-          client.send(JSON.stringify({
-            type: 'ECHO',
-            payload: { originalMessage: message },
-            timestamp: Date.now(),
-          }));
+          default:
+            // Echo unknown messages for debugging
+            client.send(JSON.stringify({
+              type: 'ECHO',
+              payload: { originalMessage: message },
+              timestamp: Date.now(),
+            }));
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[MSW WebSocket] Error handling message:', error);
+        client.send(JSON.stringify({
+          type: 'ERROR',
+          payload: { message: 'Failed to process message' },
+          timestamp: Date.now(),
+        }));
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('[MSW WebSocket] Error handling message:', error);
-      client.send(JSON.stringify({
-        type: 'ERROR',
-        payload: { message: 'Failed to process message' },
-        timestamp: Date.now(),
-      }));
-    }
-  }),
+    });
 
-  chat.addEventListener('close', () => {
-    // eslint-disable-next-line no-console
-    console.log('[MSW WebSocket] Client disconnected');
+    client.addEventListener('close', () => {
+      // eslint-disable-next-line no-console
+      console.log('[MSW WebSocket] Client disconnected');
+    });
   }),
 ];
 
@@ -153,6 +150,9 @@ async function handleStudentInterruption(
 
   if (analysis.type === 'vocabulary') {
     const vocabData = VOCABULARY_RESPONSES[0]; // In real app, would look up the word
+    if (!vocabData) {
+      throw new Error('No vocabulary data found');
+    }
     responsePayload = {
       responseText: `"${vocabData.word}" means: ${vocabData.definition}`,
       responseType: 'definition',
