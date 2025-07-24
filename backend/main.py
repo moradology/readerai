@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
+from readerai.__version__ import __app_name__, __version__
 from readerai.api.tts import router as tts_router
 from readerai.config import get_settings
 from readerai.constants import TEST_PASSAGE  # Import passage from constants
@@ -29,12 +30,8 @@ settings = get_settings()
 
 # --- DSPy Configuration ---
 try:
-    # Try LLM_API_KEY first (from our config), fall back to provider-specific env vars
-    api_key = (
-        settings.llm.api_key
-        or os.getenv("OPENAI_API_KEY")
-        or os.getenv("GOOGLE_API_KEY")
-    )
+    # Use provider-specific env vars directly
+    api_key = os.getenv("OPENAI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("LLM API key not found in environment variables.")
 
@@ -115,15 +112,19 @@ class ChatResponse(BaseModel):
 
 # Initialize FastAPI
 app = FastAPI(
-    title=f"{settings.app_name} API",
+    title=f"{__app_name__} API",
     description="API interface for the ReaderAI project (including WebSockets).",
-    version=settings.version,
+    version=__version__,
 )
 
 # Configure CORS
+# In development, allow localhost origins. In production, this should be handled by proxy/gateway
+cors_origins = os.getenv(
+    "CORS_ORIGINS", "http://localhost:3000,http://localhost:5173"
+).split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.server.cors_origins,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -461,5 +462,5 @@ if __name__ == "__main__":
         "main:app",
         host=settings.server.host,
         port=settings.server.port,
-        reload=(settings.server.environment == "development"),
+        reload=os.getenv("ENV", "development") == "development",
     )
