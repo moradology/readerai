@@ -8,7 +8,7 @@ Everything else should be a parameter.
 from pathlib import Path
 from typing import Any
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from pydantic import Field
 from pydantic_settings import (
     BaseSettings,
@@ -56,9 +56,7 @@ class YamlSettingsSource(PydanticBaseSettingsSource):
         except Exception:
             return None
 
-    def get_field_value(
-        self, field: Any, field_name: str
-    ) -> tuple[Any, str, bool]:
+    def get_field_value(self, field: Any, field_name: str) -> tuple[Any, str, bool]:
         """Get field value from YAML data"""
         if self._data is None:
             self._data = self._read_file(self.yaml_file) or {}
