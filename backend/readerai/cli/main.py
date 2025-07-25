@@ -6,6 +6,7 @@ import typer
 
 from readerai.cli import (
     config,
+    extract_chapters,
     extract_passages,
     infra,
     ingest,
@@ -25,6 +26,11 @@ app.add_typer(ingest.app, name="ingest", help="Ingest stories and generate audio
 app.add_typer(infra.app, name="infra", help="Manage infrastructure deployment")
 app.add_typer(tts.app, name="tts", help="Text-to-speech synthesis and caching")
 app.add_typer(config.app, name="config", help="Configuration management")
+app.add_typer(
+    extract_chapters.app,
+    name="extract-chapters",
+    help="Extract chapters from books using text pipeline",
+)
 
 
 # Add single commands as subcommands
