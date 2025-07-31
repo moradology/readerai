@@ -1,0 +1,10 @@
+Welcome to ReaderAI, your interactive reading companion. Today we'll explore a fascinating story about space exploration.
+
+  In the year 2157, humanity took its first steps beyond our solar system. The starship Discovery, powered by revolutionary
+  quantum drives, embarked on a journey that would change our understanding of the universe forever.
+
+  As we read this story together, feel free to pause at any time to ask questions about vocabulary or meaning. You might wonder
+   about words like 'quantum' or 'revolutionary.' That's perfectly fine! Learning happens best when we're curious.
+
+  This demonstration shows how ReaderAI synchronizes audio playback with visual text highlighting, creating an engaging reading
+   experience that adapts to your learning pace.

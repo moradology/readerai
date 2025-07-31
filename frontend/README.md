@@ -1,173 +1,436 @@
-# ReaderAI Frontend
+# ReaderAI RTK Frontend
 
-This is the frontend for the ReaderAI application, built with React, TypeScript, Vite, Chakra UI, and Tailwind CSS.
+A modern React frontend for the ReaderAI educational reading application, built with Redux Toolkit (RTK), TypeScript, and a provider-based architecture for maximum flexibility.
 
-## Quick Start
+## 🏗️ Architecture Overview
 
-```bash
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-## Development Guide
-
-### Prerequisites
-
-- Node.js (v16+)
-- npm
-
-### Setup & Installation
-
-1. **Install dependencies**:
-
-   ```bash
-   npm install
-   ```
-
-2. **Start development server**:
-
-   ```bash
-   npm run dev
-   ```
-
-3. **Build for production**:
-
-   ```bash
-   npm run build
-   ```
-
-4. **Preview production build**:
-   ```bash
-   npm run preview
-   ```
-
-### Development Features
-
-- **Dark Mode Toggle**: A button to toggle between light and dark mode is available only in development mode. This helps developers test both themes but is hidden in production.
-
-### Code Quality Tools
-
-- **Linting**:
-
-  ```bash
-  npm run lint
-  ```
-
-- **Formatting**:
-  ```bash
-  npm run format
-  ```
-
-Note: The project uses ESM modules (type: "module" in package.json). ESLint is configured using JSON format for better compatibility with ESM projects.
-
-## Project Architecture
-
-### Tech Stack
-
-- **Framework**: React with TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS + Chakra UI
-- **State Management**: React Context + Hooks
-- **Data Fetching**: TanStack React Query
-- **HTTP Client**: Native Fetch API
-
-### Directory Structure
+This frontend implements a layered architecture designed for scalability, testability, and developer experience:
 
 ```
-frontend/
-├── public/              # Static assets
-├── src/
-│   ├── features/        # Feature-based modules
-│   │   └── reader/      # Reader feature
-│   │       ├── components/ # Reader components
-│   │       └── hooks/      # Reader-specific hooks
-│   ├── hooks/           # Global custom hooks
-│   ├── services/        # API services
-│   ├── App.tsx          # Root component
-│   ├── index.css        # Global styles
-│   └── main.tsx         # Entry point
-├── .eslintrc.json       # ESLint configuration
-├── .prettierrc          # Prettier configuration
-├── tailwind.config.js   # Tailwind CSS configuration
-└── vite.config.ts       # Vite configuration
+┌─────────────────────────────────────────────────────────┐
+│                    UI Components                         │
+├─────────────────────────────────────────────────────────┤
+│                  Redux Store (RTK)                       │
+├─────────────────────────────────────────────────────────┤
+│              Provider Abstraction Layer                  │
+├─────────────────────────────────────────────────────────┤
+│   TTS Provider │ Audio Provider │ Session Provider      │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### Core Features
+## 📁 Project Structure
 
-#### Reader Component
-
-The Reader component is the central feature of the application:
-
-- Highlights words as they are read
-- Synchronizes text-to-speech with visual highlighting
-- Provides play/pause/reset controls
-
-Example usage:
-
-```tsx
-<Reader text="This is a sample text that will be read aloud." />
+```
+src/
+├── app/                    # Application-wide setup
+│   ├── store.ts           # Redux store configuration
+│   ├── hooks.ts           # Typed Redux hooks
+│   ├── middleware.ts      # Custom Redux middleware
+│   └── providers.tsx      # React context providers
+│
+├── features/              # Feature-based modules
+│   └── reading/          # Reading feature
+│       ├── api/          # RTK Query API definitions
+│       ├── components/   # React components
+│       └── store/        # Redux slices
+│
+├── providers/            # Swappable service providers
+│   ├── types.ts         # Provider interfaces
+│   ├── tts/             # Text-to-speech providers
+│   ├── audio/           # Audio player providers
+│   └── session/         # Reading session providers
+│
+├── shared/              # Shared utilities and components
+│   ├── api/            # Base API configuration
+│   ├── components/     # Reusable components
+│   └── utils/          # Utility functions
+│
+└── styles/             # Global styles and themes
 ```
 
-## Backend Integration
+## 🔄 Redux Architecture
 
-### API Communication
+### Store Configuration
 
-The application uses React Query and a custom `fetchClient` for API calls:
+The Redux store is configured with RTK's `configureStore`, providing:
 
-```tsx
-import { useQuery } from "@tanstack/react-query";
-import fetchClient from "../services/fetchClient";
+- Redux DevTools integration
+- RTK Query for data fetching
+- Custom middleware for logging, analytics, and WebSocket coordination
+- Type-safe hooks (`useAppSelector`, `useAppDispatch`)
+
+```typescript
+// Example: Using typed hooks
+import { useAppSelector, useAppDispatch } from "@app/hooks";
 
 function MyComponent() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["passages"],
-    queryFn: () => fetchClient("/api/passages").then((res) => res.data),
-  });
+  const dispatch = useAppDispatch();
+  const readingStatus = useAppSelector(selectReadingStatus);
 
-  // Use data in your component
+  const handlePlay = () => {
+    dispatch(play());
+  };
 }
 ```
 
-## Development Workflow Best Practices
+### Feature Slices
 
-1. **Component Development**:
-   - Create components in the appropriate feature directory
-   - Use Chakra UI for component base and Tailwind for custom styling
-   - Follow atomic design principles where possible
+Each feature has its own slice with:
 
-2. **State Management**:
-   - Use React Query for server state
-   - Use React Context for global UI state
-   - Use component state for local UI state
+- **State**: Strongly typed state interface
+- **Reducers**: Synchronous state updates
+- **Thunks**: Async operations
+- **Selectors**: Memoized state derivations
 
-3. **TypeScript**:
-   - Define interfaces for all props
-   - Use type inference where appropriate
-   - Avoid `any` types
+```typescript
+// features/reading/store/readingSlice.ts
+const readingSlice = createSlice({
+  name: "reading",
+  initialState,
+  reducers: {
+    play: (state) => {
+      state.status = "playing";
+    },
+    pause: (state) => {
+      state.status = "paused";
+    },
+  },
+});
+```
 
-4. **Testing**:
-   - Write tests for critical components and hooks
-   - Test user interactions and edge cases
+### RTK Query Integration
 
-## Troubleshooting
+API calls are managed through RTK Query, providing:
 
-### Common Issues
+- Automatic caching and cache invalidation
+- Loading and error states
+- Optimistic updates
+- Request deduplication
 
-- **Module not found errors**: Check import paths and make sure the module exists
-- **TypeScript errors**: Ensure proper types are defined for all variables and functions
-- **Styling conflicts**: Chakra UI and Tailwind can sometimes conflict - use Chakra's `sx` prop or Tailwind's `@apply` directive to resolve conflicts
+```typescript
+// features/reading/api/readingApi.ts
+export const readingApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getPassage: builder.query<Passage, string>({
+      query: (id) => `/passages/${id}`,
+      providesTags: ["Passage"],
+    }),
+  }),
+});
 
-## Contributing
+// Usage in components
+const { data, isLoading, error } = useGetPassageQuery(passageId);
+```
 
-Please follow these guidelines when contributing to the frontend:
+## 🔌 Provider System
 
-1. Follow the established code style (enforced by ESLint and Prettier)
-2. Create feature branches for new features
-3. Write meaningful commit messages
-4. Update documentation as needed
-5. Add tests for new functionality
+The provider system allows swapping implementations without changing application code:
+
+### Provider Types
+
+1. **TTS Provider**: Text-to-speech synthesis
+2. **Audio Player Provider**: Audio playback control
+3. **Reading Session Provider**: Session state management
+4. **Analytics Provider**: Event tracking
+
+### Implementation Modes
+
+- **Demo**: In-memory mock implementations for development
+- **Real**: Production implementations using actual services
+- **Offline**: Local-storage backed implementations
+
+### Using Providers
+
+```typescript
+import { useTTSProvider, useAudioPlayerProvider } from "@providers";
+
+function ReadingComponent() {
+  const tts = useTTSProvider();
+  const audioPlayer = useAudioPlayerProvider();
+
+  const handleStartReading = async (text: string) => {
+    // Generate audio from text
+    const { audioUrl, wordTimings } = await tts.synthesize(text);
+
+    // Load and play audio
+    await audioPlayer.load(audioUrl);
+    await audioPlayer.play();
+  };
+}
+```
+
+## 🚀 Getting Started
+
+### Installation
+
+```bash
+npm install
+```
+
+### Development
+
+```bash
+# Start with mock API (recommended for development)
+npm run dev:mock
+
+# Start with real API
+npm run dev
+
+# Start with production API
+npm run dev:prod-api
+```
+
+### Environment Variables
+
+```bash
+# API Configuration
+VITE_API_URL=http://localhost:8000/api
+VITE_WS_URL=ws://localhost:8000/ws
+
+# Feature Flags
+VITE_MOCK_API=true           # Use mock service worker
+VITE_OFFLINE_MODE=false      # Use offline providers
+VITE_FEATURE_ANALYTICS=true  # Enable analytics
+VITE_LOG_LEVEL=debug        # Logging level
+```
+
+## 🔄 Development Flow & Backend Integration
+
+### Understanding the Full Stack Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Production (Docker)                    │
+│  ┌─────────────┐         ┌───────────────────────────┐ │
+│  │   Caddy     │ ──────► │   Python Backend (FastAPI)│ │
+│  │  (Reverse   │         │   - DSPy Integration      │ │
+│  │   Proxy)    │         │   - TTS Services          │ │
+│  │             │         │   - WebSocket Handler     │ │
+│  │  Port 80/443│         │   Port 8000               │ │
+│  └─────────────┘         └───────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                 Development Environment                  │
+│  ┌─────────────┐         ┌───────────────────────────┐ │
+│  │ Vite Dev    │ ──────► │   Python Backend          │ │
+│  │ Server      │  proxy  │   (Same as above)         │ │
+│  │             │         │                           │ │
+│  │ Port 3001   │         │   Port 8000               │ │
+│  └─────────────┘         └───────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Development Mode Flow
+
+1. **Frontend (React)** runs on port 3001 via Vite dev server
+2. **Backend (Python/FastAPI)** runs on port 8000
+3. **Vite Proxy** forwards `/api/*` and `/ws/*` requests to prevent CORS issues
+
+```yaml
+# What happens when you make an API call:
+Frontend:     fetch('/api/passages')
+     ↓
+Vite Server:  Intercepts request at localhost:3001/api/passages
+     ↓
+Vite Proxy:   Forwards to localhost:8000/api/passages
+     ↓
+Python:       Handles request, returns response
+     ↓
+Frontend:     Receives data (no CORS issues!)
+```
+
+### Mock vs Real Backend
+
+#### With Mocks Enabled (VITE_MOCK_API=true)
+
+```
+Browser → Vite Server → MSW Intercepts → Returns Mock Data
+                         ↓
+                    (Never reaches Python backend)
+```
+
+#### With Mocks Disabled (VITE_MOCK_API=false)
+
+```
+Browser → Vite Server → Proxy → Python Backend
+                                    ↓
+                                 Real Data
+```
+
+### Why the Proxy?
+
+The Vite proxy is **not a separate backend** - it's a development convenience that:
+
+- **Solves CORS**: Browsers block cross-origin requests (3001 → 8000)
+- **Simplifies Development**: Makes API calls "just work" in development
+- **Mirrors Production**: In production, Caddy serves the same proxy role
+
+### Running the Full Stack
+
+```bash
+# Terminal 1: Start Python backend
+cd /path/to/readerai
+python main.py  # Runs on port 8000
+
+# Terminal 2: Start React frontend
+cd /path/to/readerai/frontend
+npm run dev     # Runs on port 3001 with proxy to 8000
+```
+
+### API Endpoints Available
+
+When connected to the real backend, these endpoints are available:
+
+- `/api/initial_passage` - Get starting passage with question
+- `/api/passages` - List all passages
+- `/api/sessions` - Create/manage reading sessions
+- `/api/sessions/:id/progress` - Update reading position
+- `/api/sessions/:id/interruptions` - Handle student questions
+- `/api/sessions/:id/checkpoints` - Submit checkpoint answers
+- `/ws` - WebSocket connection for real-time features
+
+### Production Deployment
+
+In production, the architecture changes:
+
+1. Frontend is built to static files: `npm run build`
+2. Caddy serves static files and proxies API requests
+3. No Vite involved - just Caddy → Python
+4. Docker Compose orchestrates everything
+
+## 🧪 Testing Strategy
+
+### Unit Tests
+
+- Provider implementations
+- Redux reducers and selectors
+- Utility functions
+
+### Integration Tests
+
+- Provider + Redux integration
+- API mocking with MSW
+- Component behavior
+
+### E2E Tests
+
+- Complete reading flows
+- Interruption handling
+- Progress persistence
+
+## 📊 State Management Patterns
+
+### Local Component State
+
+Use for UI-only state that doesn't need to be shared:
+
+```typescript
+const [isModalOpen, setIsModalOpen] = useState(false);
+```
+
+### Redux State
+
+Use for:
+
+- Shared state between components
+- State that needs to persist
+- Complex state logic
+- Server cache (via RTK Query)
+
+### Provider State
+
+Providers maintain their own internal state for:
+
+- Audio playback position
+- Session timers
+- Connection status
+
+## 🔧 Middleware
+
+Custom middleware handles cross-cutting concerns:
+
+1. **Error Logging**: Catches and reports failed actions
+2. **Action Logging**: Development-only action logger
+3. **Analytics**: Tracks user interactions
+4. **WebSocket Coordination**: Manages real-time connections
+
+## 🎨 Component Patterns
+
+### Container/Presentational Split
+
+- **Container**: Connected to Redux, handles logic
+- **Presentational**: Pure UI components, receive props
+
+### Provider Hooks
+
+- Must be used within `ProviderContextProvider`
+- Throw errors if providers aren't ready
+- Provide type-safe access to services
+
+### Error Boundaries
+
+- Wrap major UI sections
+- Provide fallback UI
+- Report errors to monitoring
+
+## 🚦 Data Flow
+
+1. **User Action** → Component Event Handler
+2. **Dispatch Action** → Redux Store or Provider Method
+3. **State Update** → Reducers update state / Providers update internal state
+4. **Re-render** → Selectors provide new data to components
+5. **UI Update** → React re-renders with new state
+
+## 🔐 Security Considerations
+
+- API tokens stored in memory only
+- Automatic token refresh with mutex protection
+- CORS configured for API requests
+- Content Security Policy headers
+
+## 📈 Performance Optimizations
+
+- RTK Query request deduplication
+- Memoized selectors with Reselect
+- Code splitting by route
+- Vendor chunk separation
+- React.memo for expensive components
+
+## 🛠️ Development Tools
+
+- **Redux DevTools**: Time-travel debugging
+- **React Developer Tools**: Component inspection
+- **TypeScript**: Full type safety
+- **ESLint**: Code quality enforcement
+- **Prettier**: Consistent formatting
+
+## 📝 Best Practices
+
+1. **Always use typed hooks** (`useAppSelector`, `useAppDispatch`)
+2. **Colocate related code** (slice, types, selectors in same file)
+3. **Normalize state shape** (entities by ID, arrays of IDs)
+4. **Use RTK Query** for all API calls
+5. **Leverage providers** for swappable implementations
+6. **Write tests** for critical business logic
+
+## 🚧 Roadmap
+
+- [ ] WebSocket integration for real-time updates
+- [ ] Offline support with service workers
+- [ ] Advanced audio features (pitch control, voice selection)
+- [ ] Session recording and playback
+- [ ] Multi-language support
+- [ ] Accessibility improvements
+
+## 🤝 Contributing
+
+1. Follow the established patterns
+2. Add tests for new features
+3. Update types when changing APIs
+4. Use conventional commits
+5. Run `npm run validate` before pushing
+
+---
+
+Built with ❤️ using React, Redux Toolkit, and TypeScript

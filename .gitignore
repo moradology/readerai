@@ -177,3 +177,16 @@ cython_debug/
 .env
 .aider*
 .DS_Store
+
+# Local settings (use settings.example.yaml as template)
+settings.yaml
+
+# AWS and Terraform
+.env.aws
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+infra/terraform/.terraform.lock.hcl
+infra/terraform/terraform.tfvars
+infra/terraform/tfplan
+infra/terraform/.terraform.tfstate.lock.info
